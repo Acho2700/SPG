@@ -13,17 +13,11 @@ class Character(pygame.sprite.Sprite):
         self.angle = 0  # Храним последний угол поворота
 
     def update(self, keys_pressed, walls):
-        dx = 0
-        dy = 0
-
-        if keys_pressed[pygame.K_w]:
-            dy = -self.speed
-        if keys_pressed[pygame.K_s]:
-            dy = self.speed
-        if keys_pressed[pygame.K_a]:
-            dx = -self.speed
-        if keys_pressed[pygame.K_d]:
-            dx = self.speed
+        dx = dy = 0
+        if keys_pressed[pygame.K_w]: dy -= self.speed
+        if keys_pressed[pygame.K_s]: dy += self.speed
+        if keys_pressed[pygame.K_a]: dx -= self.speed
+        if keys_pressed[pygame.K_d]: dx += self.speed
 
         # Обновляем направление для поворота (если нужно)
         direction = pygame.math.Vector2(dx, dy)
@@ -39,32 +33,25 @@ class Character(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def move(self, dx, dy, walls):
-        # Двигаемся по оси X
-        self.rect.x += dx
-        # Проверяем коллизии по X
-        collided_walls = pygame.sprite.spritecollide(self, walls, False)
-        for wall in collided_walls:
-            if dx > 0:  # Движение вправо
-                self.rect.right = wall.rect.left
-            elif dx < 0:  # Движение влево
-                self.rect.left = wall.rect.right
+        # Сохраняем старую позицию
+        old_pos = self.rect.copy()
 
-        # Двигаемся по оси Y
+        # Пробуем двигаться по X
+        self.rect.x += dx
+        if pygame.sprite.spritecollide(self, walls, False):
+            self.rect.x = old_pos.x
+
+        # Пробуем двигаться по Y
         self.rect.y += dy
-        # Проверяем коллизии по Y
-        collided_walls = pygame.sprite.spritecollide(self, walls, False)
-        for wall in collided_walls:
-            if dy > 0:  # Движение вниз
-                self.rect.bottom = wall.rect.top
-            elif dy < 0:  # Движение вверх
-                self.rect.top = wall.rect.bottom
+        if pygame.sprite.spritecollide(self, walls, False):
+            self.rect.y = old_pos.y
 
 
 # Дочерние классы персонажей
 
 class Tank(Character):
     def __init__(self, pos=(0, 0)):
-        super().__init__('tempelates/Tank/game_model_t-Photoroom.png', pos, speed=50)  # Можно задать уникальную скорость
+        super().__init__('tempelates/Tank/game_model_t-Photoroom.png', pos, speed=5)  # Можно задать уникальную скорость
 
 
 class Engineer(Character):

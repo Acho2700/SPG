@@ -1,6 +1,6 @@
 import pygame
 import sys
-
+from Camera import Camera
 from select import select
 
 import utils
@@ -18,15 +18,14 @@ def main():
     pygame.display.set_caption("p.s.g")
     bg_image = pygame.image.load('tempelates/background_game.png').convert()
     background = pygame.transform.scale(bg_image, (utils.WIDTH, utils.HEIGHT))
-
+    level = Level(map2)  # Создаём уровень
+    camera = Camera(level.level_pixel_width, level.level_pixel_height)  # Инициализируем камеру после создания уровня
     running = True
     clock = pygame.time.Clock()
-
-    character_select_screen = CharacterSelectScreen()
+    character_select_screen = CharacterSelectScreen()  # объявление экарна выбора персонажа
     game_started = False
 
     player = None  # Переменная для выбранного персонажа
-    level = None   # Переменная для уровня
 
     while running:
         for event in pygame.event.get():
@@ -36,7 +35,7 @@ def main():
             if not game_started:
                 character_select_screen.handle_event(event)
 
-        if not game_started:
+        if not game_started: #МЕНЮ ВЫБОРА ПЕРСОНАЖА
             character_select_screen.draw(screen)
             if character_select_screen.is_ready():
                 game_started = True
@@ -45,28 +44,33 @@ def main():
                 name = selected['name']
                 print("Игра началась с персонажем:", name)
 
-                start_pos = (utils.WIDTH // 2, utils.HEIGHT // 2)
-
                 # Создаём объект выбранного персонажа
                 if name == "TANK":
-                    player = Tank(pos=start_pos)
+                    player = Tank(pos=level.spawn_point)
                 elif name == "ENGINEER":
-                    player = Engineer(pos=start_pos)
+                    player = Engineer(pos=level.spawn_point)
                 elif name == "STORMTROOPER":
-                    player = Stormtrooper(pos=start_pos)
-                else:
-                    player = Tank(pos=start_pos)
+                    player = Stormtrooper(pos=level.spawn_point)
 
-                # Создаём уровень (пример с map2)
-                level = Level(map1)
-
-        else:
-            screen.blit(background, (0, 0))
-            level.draw(screen)
+        else: # УРОВЕНЬ ИГРЫ
+            if not hasattr(level, 'initialized'):
+                # Обновляем позицию персонажа
+                player.rect.center = level.spawn_point
+                level.initialized = True
 
             keys = pygame.key.get_pressed()
             player.update(keys, level.walls)
-            screen.blit(player.image, player.rect)  # Рисуем игрока
+
+            camera.update(player)
+            screen.blit(background, (0, 0))
+            # Рисуем уровень с учётом камеры
+            for wall in level.walls:
+                screen.blit(wall.image, camera.apply(wall))
+            for floor in level.floors:
+                screen.blit(floor.image, camera.apply(floor))
+
+            screen.blit(player.image, camera.apply(player))
+
 
         pygame.display.flip()
         clock.tick(60)

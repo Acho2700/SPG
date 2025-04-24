@@ -21,41 +21,46 @@ class Floor(pygame.sprite.Sprite):
 # Класс уровня, который загружает карту и создаёт стены
 class Level:
     def __init__(self, level_map):
-        self.tile_size = utils.TILE_SIZE[0]  # Размер одного блока (тайла)
-        self.wall_texture = pygame.image.load('tempelates/wall_block.jpg') # Текстура для стен
-        self.floor_texture = pygame.image.load('tempelates/floor_block.jpg')  # Текстура для стен
-        self.walls = pygame.sprite.Group()  # Группа спрайтов для стен
+        self.tile_size = utils.TILE_SIZE[0]
+        self.wall_texture = pygame.image.load('tempelates/wall_block.jpg').convert()
+        self.floor_texture = pygame.image.load('tempelates/floor_block.jpg').convert()
+        self.walls = pygame.sprite.Group()
         self.floors = pygame.sprite.Group()
 
-        self.level_pixel_width = len(level_map[0]) * self.tile_size
-        self.level_pixel_height = len(level_map) * self.tile_size
+        self.level_width = len(level_map[0])  # Ширина в тайлах
+        self.level_height = len(level_map)  # Высота в тайлах
+        self.level_pixel_width = self.level_width * self.tile_size
+        self.level_pixel_height = self.level_height * self.tile_size
 
-        # Вычисляем смещение для центровки
-        self.offset_x = (utils.WIDTH - self.level_pixel_width) // 2
-        self.offset_y = (utils.HEIGHT - self.level_pixel_height) // 2
+        # # Убираем центровку уровня
+        # self.offset_x = 0
+        # self.offset_y = 0
 
-        self.load_level(level_map)  # Загружаем уровень из карты
+        self.load_level(level_map)
 
-
-    # Метод для загрузки уровня по карте (список строк)
     def load_level(self, level_map):
-        # Проходим по каждой строке с индексом y
-        for y, row in enumerate(level_map):
-            # Проходим по каждому символу в строке с индексом x
-            for x, char in enumerate(row):
-                # Вычисляем позицию на экране по координатам в карте
-                # Если символ '#' — создаём стену
-                if char == '#':
-                    pos_x = self.offset_x + x * self.tile_size
-                    pos_y = self.offset_y + y * self.tile_size
-                    wall = Wall(pos_x, pos_y, self.tile_size, self.wall_texture)
-                    self.walls.add(wall)  # Добавляем стену в группу
+        self.spawn_point = None
 
-                if char == '.':
-                    pos_x = self.offset_x + x * self.tile_size
-                    pos_y = self.offset_y + y * self.tile_size
+        for y, row in enumerate(level_map):
+            for x, char in enumerate(row):
+                pos_x = x * self.tile_size
+                pos_y = y * self.tile_size
+
+                if char == '#':
+
+                    wall = Wall(pos_x, pos_y, self.tile_size, self.wall_texture)
+                    self.walls.add(wall)
+
+                if char == '.' or char == '$':
+
                     floor = Floor(pos_x, pos_y, self.tile_size, self.floor_texture)
-                    self.floors.add(floor)  # Добавляем стену в группу
+                    if char == '$':
+                        print((pos_x, pos_y))
+                        self.spawn_point = (pos_x, pos_y)
+                    self.floors.add(floor)
+
+
+
 
                 # Здесь можно добавить обработку других символов для пола, врагов и т.д.
 
