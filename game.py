@@ -28,6 +28,10 @@ def main():
     player = None  # Переменная для выбранного персонажа
 
     while running:
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_click = pygame.mouse.get_pressed()
+
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -37,6 +41,7 @@ def main():
 
         if not game_started: #МЕНЮ ВЫБОРА ПЕРСОНАЖА
             character_select_screen.draw(screen)
+
             if character_select_screen.is_ready():
                 game_started = True
                 selected = character_select_screen.characters[character_select_screen.selected_character]
@@ -52,12 +57,26 @@ def main():
                 elif name == "STORMTROOPER":
                     player = Stormtrooper(pos=level.spawn_point)
 
-        else: # УРОВЕНЬ ИГРЫ
+                pygame.event.clear()
+                pygame.mouse.get_rel()
+
+
+        else:  # УРОВЕНЬ ИГРЫ
+
+            mouse_click = pygame.mouse.get_pressed()
             if not hasattr(level, 'initialized'):
                 # Обновляем позицию персонажа
                 player.rect.center = level.spawn_point
                 level.initialized = True
 
+            # Преобразуем экранные координаты в мировые
+            world_mouse_pos = (
+                mouse_pos[0] + camera.offset.x,
+                mouse_pos[1] + camera.offset.y
+            )
+
+            if isinstance(player, Stormtrooper):
+                player.handle_shooting(world_mouse_pos, mouse_click, level.walls)
             keys = pygame.key.get_pressed()
             player.update(keys, level.walls)
 
@@ -68,7 +87,8 @@ def main():
                 screen.blit(wall.image, camera.apply(wall))
             for floor in level.floors:
                 screen.blit(floor.image, camera.apply(floor))
-
+            for bullet in player.bullets:
+                screen.blit(bullet.image, camera.apply(bullet))
             screen.blit(player.image, camera.apply(player))
 
 
