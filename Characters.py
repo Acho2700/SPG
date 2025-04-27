@@ -1,6 +1,6 @@
 import pygame
 import utils
-from Projectile import RifleBullet, FireBullet
+from Projectile import RifleBullet, FireBullet, Axe
 
 class Character(pygame.sprite.Sprite):
     def __init__(self, image_path, pos=(0, 0), speed=5):
@@ -55,7 +55,42 @@ class Character(pygame.sprite.Sprite):
 
 class Tank(Character):
     def __init__(self, pos=(0, 0)):
-        super().__init__('tempelates/Tank/game_model_t-Photoroom.png', pos, speed=5)  # Можно задать уникальную скорость
+        super().__init__('tempelates/Tank/game_model_t_axe.png', pos, speed=5)
+        self.image_with_axe = pygame.image.load('tempelates/Tank/game_model_t-Photoroom.png').convert_alpha()
+        self.image_with_axe = pygame.transform.scale(self.image_with_axe, self.rect.size)
+        self.original_image = self.image
+
+        self.throw_cooldown = 0
+        self.throw_delay = 60
+        self.bullets = pygame.sprite.Group()
+
+    def handle_shooting(self, target_pos, mouse_click, walls):
+        # Удаляем мертвые пули
+        self.bullets = pygame.sprite.Group([b for b in self.bullets if b.alive()])
+
+        # Определяем состояние топора
+        has_axe = len(self.bullets) > 0
+
+        # Переключаем изображение
+        if has_axe:
+            self.image = self.image_with_axe
+        else:
+            self.image = self.original_image
+
+        self.rect = self.image.get_rect(center=self.rect.center)
+        self.mask = pygame.mask.from_surface(self.image)
+
+        # Бросок при условии
+        if mouse_click[0] and len(self.bullets) == 0 and self.throw_cooldown <= 0:
+            new_axe = Axe(owner=self, target_pos=target_pos)
+            self.bullets.add(new_axe)
+            self.throw_cooldown = self.throw_delay
+
+        # Кулдаун
+        if self.throw_cooldown > 0:
+            self.throw_cooldown -= 1
+
+        self.bullets.update(walls)
 
 
 class Engineer(Character):
