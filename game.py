@@ -75,8 +75,8 @@ def main():
                 mouse_pos[1] + camera.offset.y
             )
 
-            if isinstance(player, Stormtrooper):
-                player.handle_shooting(world_mouse_pos, mouse_click, level.walls)
+            # if isinstance(player, Stormtrooper):
+            player.handle_shooting(world_mouse_pos, mouse_click, level.walls)
             keys = pygame.key.get_pressed()
             player.update(keys, level.walls)
 

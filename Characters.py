@@ -1,6 +1,6 @@
 import pygame
 import utils
-from Projectile import RifleBullet
+from Projectile import RifleBullet, FireBullet
 
 class Character(pygame.sprite.Sprite):
     def __init__(self, image_path, pos=(0, 0), speed=5):
@@ -15,8 +15,6 @@ class Character(pygame.sprite.Sprite):
 
         #для стрельбы
         self.bullets = pygame.sprite.Group()
-        self.shoot_cooldown = 0
-        self.shoot_delay = 0
 
     def update(self, keys_pressed, walls):
         dx = dy = 0
@@ -63,6 +61,36 @@ class Tank(Character):
 class Engineer(Character):
     def __init__(self, pos=(0, 0)):
         super().__init__('tempelates/Engineer/game_model_e.png', pos, speed=5)
+        self.burst_count = 0  # Текущий счётчик очереди
+        self.burst_size = 30  # Размер очереди
+        self.burst_delay = 2 # Задержка между пулями
+        self.shoot_cooldown = 0  # Таймер задержки
+        self.bullets = pygame.sprite.Group()
+
+    def handle_shooting(self, target_pos, mouse_click, walls):
+        """
+        Обработка стрельбы по мышке
+        :param target_pos: позиция курсора
+        :param mouse_click: состояние кнопки мыши
+        :param walls: группа стен для коллизий
+        """
+        if mouse_click[0] and self.burst_count == 0 and self.shoot_cooldown <= 0:
+            self.burst_count = self.burst_size
+            self.shoot_cooldown = 60
+
+        if self.burst_count > 0 and self.shoot_cooldown <= 0:
+            bullet = FireBullet(
+                start_pos=self.rect.center,
+                target_pos=target_pos,
+            )
+            self.bullets.add(bullet)
+            self.burst_count -= 1
+            self.shoot_cooldown = self.burst_delay
+
+        if self.shoot_cooldown > 0:
+            self.shoot_cooldown -= 1
+
+        self.bullets.update(walls)
 
 
 class Stormtrooper(Character):
