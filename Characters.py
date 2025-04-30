@@ -3,7 +3,7 @@ import utils
 from Projectile import RifleBullet, FireBullet, Axe
 
 class Character(pygame.sprite.Sprite):
-    def __init__(self, image_path, pos=(0, 0), speed=5):
+    def __init__(self, image_path, pos=(0, 0), speed=5, health=100):
         super().__init__()
         self.original_image = pygame.image.load(image_path).convert_alpha()
         self.scaled_image = pygame.transform.scale(self.original_image, utils.TILE_SIZE)
@@ -12,11 +12,12 @@ class Character(pygame.sprite.Sprite):
         self.speed = speed
         self.direction = pygame.math.Vector2(0, 0)
         self.angle = 0  # Храним последний угол поворота
+        self.health = health
 
         #для стрельбы
         self.bullets = pygame.sprite.Group()
 
-    def update(self, keys_pressed, walls):
+    def update(self, keys_pressed, walls, monsters):
         dx = dy = 0
         if keys_pressed[pygame.K_w]: dy -= self.speed
         if keys_pressed[pygame.K_s]: dy += self.speed
@@ -36,26 +37,49 @@ class Character(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.scaled_image, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
 
+        self.taking_damage(monsters)
+        if self.health <= 0:
+            self.kill()
+            return True  # Возвращаем True при смерти
+        return False
+
+
+
+
     def move(self, dx, dy, walls):
         # Сохраняем старую позицию
-        old_pos = self.rect.copy()
 
         # Пробуем двигаться по X
         self.rect.x += dx
         if pygame.sprite.spritecollide(self, walls, False):
-            self.rect.x = old_pos.x
+            self.rect.x -= dx
 
         # Пробуем двигаться по Y
         self.rect.y += dy
         if pygame.sprite.spritecollide(self, walls, False):
-            self.rect.y = old_pos.y
+            self.rect.y -= dy
+
+    def taking_damage(self, monsters):
+        # Получение дамага от монстров
+        if pygame.sprite.spritecollide(self, monsters, False):
+            damage = monsters.sprites()[0].damage  # урон монстра
+            self.health -= damage
+
+
+
+
+
+
+
+
+
 
 
 # Дочерние классы персонажей
 
 class Tank(Character):
     def __init__(self, pos=(0, 0)):
-        super().__init__('tempelates/Tank/game_model_t_axe.png', pos, speed=5)
+        super().__init__('tempelates/Tank/game_model_t_axe.png', pos, speed=5, health=100)
         self.image_with_axe = pygame.image.load('tempelates/Tank/game_model_t-Photoroom.png').convert_alpha()
         self.image_with_axe = pygame.transform.scale(self.image_with_axe, self.rect.size)
         self.original_image = self.image
@@ -63,6 +87,7 @@ class Tank(Character):
         self.throw_cooldown = 0
         self.throw_delay = 60
         self.bullets = pygame.sprite.Group()
+        self.health = 200
 
     def handle_shooting(self, target_pos, mouse_click, walls):
         # Удаляем мертвые пули
@@ -95,12 +120,14 @@ class Tank(Character):
 
 class Engineer(Character):
     def __init__(self, pos=(0, 0)):
-        super().__init__('tempelates/Engineer/game_model_e.png', pos, speed=5)
+        super().__init__('tempelates/Engineer/game_model_e.png', pos, speed=5, health=100)
         self.burst_count = 0  # Текущий счётчик очереди
         self.burst_size = 30  # Размер очереди
         self.burst_delay = 2 # Задержка между пулями
         self.shoot_cooldown = 0  # Таймер задержки
         self.bullets = pygame.sprite.Group()
+        self.health = 100
+
 
     def handle_shooting(self, target_pos, mouse_click, walls):
         """
@@ -130,12 +157,14 @@ class Engineer(Character):
 
 class Stormtrooper(Character):
     def __init__(self, pos=(0, 0)):
-        super().__init__('tempelates/Stormtrooper/game_model_s.png', pos, speed=5)
+        super().__init__('tempelates/Stormtrooper/game_model_s.png', pos, speed=5, health=100)
         self.burst_count = 0  # Текущий счётчик очереди
         self.burst_size = 3  # Размер очереди
         self.burst_delay = 7  # Задержка между пулями
         self.shoot_cooldown = 0  # Таймер задержки
         self.bullets = pygame.sprite.Group()
+        self.health = 150
+
 
     def handle_shooting(self, target_pos, mouse_click, walls):
         """

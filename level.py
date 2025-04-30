@@ -40,6 +40,7 @@ class Level:
 
     def load_level(self, level_map):
         self.spawn_point = None
+        self.spawn_monster = []
 
         for y, row in enumerate(level_map):
             for x, char in enumerate(row):
@@ -51,13 +52,18 @@ class Level:
                     wall = Wall(pos_x, pos_y, self.tile_size, self.wall_texture)
                     self.walls.add(wall)
 
-                if char == '.' or char == '$':
+                if char == '.' or char == '$' or char == '*':
 
                     floor = Floor(pos_x, pos_y, self.tile_size, self.floor_texture)
                     if char == '$':
-                        print((pos_x, pos_y))
                         self.spawn_point = (pos_x, pos_y)
+
+                    if char == '*':
+                        self.spawn_monster.append((pos_x, pos_y))
+
                     self.floors.add(floor)
+
+
 
 
 

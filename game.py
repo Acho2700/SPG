@@ -7,9 +7,14 @@ import utils
 from Select_sreen import CharacterSelectScreen
 from level import Level
 from level_map import *
+from Spawner import MonsterSpawner
 
 # Импортируем классы персонажей
 from Characters import Tank, Engineer, Stormtrooper
+
+def draw_with_camera(group, surface, camera):
+    for sprite in group:
+        surface.blit(sprite.image, camera.apply(sprite))
 
 def main():
     pygame.init()
@@ -27,11 +32,17 @@ def main():
 
     player = None  # Переменная для выбранного персонажа
 
+    spawner = MonsterSpawner(
+        spawn_points=level.spawn_monster,
+        spawn_delay=2000, #Милисекунды
+        max_monsters=30
+    )
+
     while running:
         mouse_pos = pygame.mouse.get_pos()
         mouse_click = pygame.mouse.get_pressed()
 
-
+        # Обработка событий
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -39,17 +50,14 @@ def main():
             if not game_started:
                 character_select_screen.handle_event(event)
 
-        if not game_started: #МЕНЮ ВЫБОРА ПЕРСОНАЖА
+        # --- Меню ---
+        if not game_started:
             character_select_screen.draw(screen)
 
             if character_select_screen.is_ready():
-                game_started = True
                 selected = character_select_screen.characters[character_select_screen.selected_character]
-                print(selected)
                 name = selected['name']
-                print("Игра началась с персонажем:", name)
 
-                # Создаём объект выбранного персонажа
                 if name == "TANK":
                     player = Tank(pos=level.spawn_point)
                 elif name == "ENGINEER":
@@ -57,43 +65,49 @@ def main():
                 elif name == "STORMTROOPER":
                     player = Stormtrooper(pos=level.spawn_point)
 
-                pygame.event.clear()
-                pygame.mouse.get_rel()
+                game_started = True
+                level.initialized = False
+
+        # --- Игра ---
+        else:
 
 
-        else:  # УРОВЕНЬ ИГРЫ
-
-            mouse_click = pygame.mouse.get_pressed()
+            # Игровая логика
             if not hasattr(level, 'initialized'):
-                # Обновляем позицию персонажа
                 player.rect.center = level.spawn_point
                 level.initialized = True
 
-            # Преобразуем экранные координаты в мировые
-            world_mouse_pos = (
-                mouse_pos[0] + camera.offset.x,
-                mouse_pos[1] + camera.offset.y
-            )
-
-            # if isinstance(player, Stormtrooper):
+            world_mouse_pos = (mouse_pos[0] + camera.offset.x, mouse_pos[1] + camera.offset.y)
             player.handle_shooting(world_mouse_pos, mouse_click, level.walls)
-            keys = pygame.key.get_pressed()
-            player.update(keys, level.walls)
 
+            keys = pygame.key.get_pressed()
+            player_dead = player.update(keys, level.walls, spawner.monsters)
+            #Смерть и выход в меню выбора
+            if player_dead:
+                game_started = False
+                player = None
+                spawner.monsters.empty()
+                character_select_screen.reset()  # Сбрасываем выбор персонажа
+                continue
+
+            spawner.update(player, level.walls, player.bullets)
+
+            # Отрисовка
             camera.update(player)
             screen.blit(background, (0, 0))
-            # Рисуем уровень с учётом камеры
-            for wall in level.walls:
-                screen.blit(wall.image, camera.apply(wall))
+
             for floor in level.floors:
                 screen.blit(floor.image, camera.apply(floor))
+            for wall in level.walls:
+                screen.blit(wall.image, camera.apply(wall))
+
+            draw_with_camera(spawner.monsters, screen, camera)
+
             for bullet in player.bullets:
                 screen.blit(bullet.image, camera.apply(bullet))
-            screen.blit(player.image, camera.apply(player))
 
+            screen.blit(player.image, camera.apply(player))
 
         pygame.display.flip()
         clock.tick(60)
 
-    pygame.quit()
-    sys.exit()
