@@ -17,7 +17,7 @@ class Character(pygame.sprite.Sprite):
         #для стрельбы
         self.bullets = pygame.sprite.Group()
 
-    def update(self, keys_pressed, walls, monsters):
+    def update(self, keys_pressed, walls, monsters, monster_bullets):
         dx = dy = 0
         if keys_pressed[pygame.K_w]: dy -= self.speed
         if keys_pressed[pygame.K_s]: dy += self.speed
@@ -37,7 +37,8 @@ class Character(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.scaled_image, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
 
-        self.taking_damage(monsters)
+        self.taking_damage(monsters, monster_bullets)
+        print(self.health)
         if self.health <= 0:
             self.kill()
             return True  # Возвращаем True при смерти
@@ -59,20 +60,14 @@ class Character(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, walls, False):
             self.rect.y -= dy
 
-    def taking_damage(self, monsters):
+    def taking_damage(self, monsters, monster_bullets):
         # Получение дамага от монстров
         if pygame.sprite.spritecollide(self, monsters, False):
             damage = monsters.sprites()[0].damage  # урон монстра
             self.health -= damage
-
-
-
-
-
-
-
-
-
+        collided_bullets = pygame.sprite.spritecollide(self, monster_bullets, True)
+        for bullet in collided_bullets:
+            self.health -= bullet.damage
 
 
 # Дочерние классы персонажей

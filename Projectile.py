@@ -114,3 +114,6 @@ class Axe(Bullet):
         # Возврат к персонажу
         if self.is_returning and self.rect.collidepoint(self.owner.rect.center):
             self.kill()
+
+
+

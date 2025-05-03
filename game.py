@@ -8,6 +8,7 @@ from Select_sreen import CharacterSelectScreen
 from level import Level
 from level_map import *
 from Spawner import MonsterSpawner
+from Monsters import Pluvaka
 
 # Импортируем классы персонажей
 from Characters import Tank, Engineer, Stormtrooper
@@ -35,7 +36,7 @@ def main():
     spawner = MonsterSpawner(
         spawn_points=level.spawn_monster,
         spawn_delay=2000, #Милисекунды
-        max_monsters=30
+        max_monsters=1
     )
 
     while running:
@@ -81,7 +82,7 @@ def main():
             player.handle_shooting(world_mouse_pos, mouse_click, level.walls)
 
             keys = pygame.key.get_pressed()
-            player_dead = player.update(keys, level.walls, spawner.monsters)
+            player_dead = player.update(keys, level.walls, spawner.monsters, spawner.all_monster_bullets)
             #Смерть и выход в меню выбора
             if player_dead:
                 game_started = False
@@ -90,11 +91,16 @@ def main():
                 character_select_screen.reset()  # Сбрасываем выбор персонажа
                 continue
 
-            spawner.update(player, level.walls, player.bullets)
+            spawner.update(player, level.walls, player.bullets, screen, camera)
+            spawner.all_monster_bullets.update(level.walls, player)
 
             # Отрисовка
             camera.update(player)
             screen.blit(background, (0, 0))
+
+            collided_bullets = pygame.sprite.spritecollide(player, spawner.all_monster_bullets, True)
+            for bullet in collided_bullets:
+                player.health -= bullet.damage
 
             for floor in level.floors:
                 screen.blit(floor.image, camera.apply(floor))
@@ -102,6 +108,10 @@ def main():
                 screen.blit(wall.image, camera.apply(wall))
 
             draw_with_camera(spawner.monsters, screen, camera)
+
+            for bullet in spawner.all_monster_bullets:
+                print('bullet')
+                screen.blit(bullet.image, camera.apply(bullet))
 
             for bullet in player.bullets:
                 screen.blit(bullet.image, camera.apply(bullet))
