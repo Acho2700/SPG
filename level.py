@@ -1,47 +1,118 @@
-import pygame, utils
+import pygame, utils, random
 
-# Класс для стены
-class Wall(pygame.sprite.Sprite):
-    def __init__(self, x, y, size, texture):
+class Obstacle(pygame.sprite.Sprite):
+    """
+      Класс препятствия на карте (стена, вода и т.п.).
+
+      Атрибуты:
+          image (pygame.Surface): Текущая текстура препятствия.
+          rect (pygame.Rect): Прямоугольник для позиционирования и коллизий.
+          water_textures (tuple or list): Кортеж/список из текстур для анимации воды (если есть).
+          size (int): Размер тайла (ширина и высота).
+          current_texture_index (int): Индекс текущей текстуры для анимации.
+          last_switch_time (int): Время последнего переключения текстуры (в миллисекундах).
+          switch_interval (int): Интервал переключения текстуры (в миллисекундах).
+    """
+
+    def __init__(self, x, y, size, texture, water_textures=None):
+        """
+               Инициализация препятствия.
+
+               Args:
+                   x (int): Координата X верхнего левого угла.
+                   y (int): Координата Y верхнего левого угла.
+                   size (int): Размер тайла (ширина и высота).
+                   texture (pygame.Surface): Текстура препятствия.
+                   water_textures (tuple or list, optional): Текстуры для анимации воды.
+        """
         super().__init__()
-        # Масштабируем текстуру под размер тайла
         self.image = pygame.transform.scale(texture, (size, size))
-        # Получаем прямоугольник для позиционирования и коллизий
-        self.rect = self.image.get_rect(topleft=(x, y))  # Устанавливаем позицию стены
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.water_textures = water_textures
+        self.size = size
+        self.current_texture_index = 0
+        self.last_switch_time = 0
+        self.switch_interval = 500
+    def water_animation(self, current_time):
+        """
+                Обновляет анимацию воды, переключая текстуры с заданным интервалом.
 
-class Floor(pygame.sprite.Sprite):
-    def __init__(self, x, y, size, texture):
-        super().__init__()
-        # Масштабируем текстуру под размер тайла
-        self.image = pygame.transform.scale(texture, (size, size))
-        # Получаем прямоугольник для позиционирования и коллизий
-        self.rect = self.image.get_rect(topleft=(x, y))  # Устанавливаем позицию стены
+                Args:
+                    current_time (int): Текущее время в миллисекундах (обычно pygame.time.get_ticks()).
+        """
+
+        if self.water_textures is None:
+            return  # Не вода, анимация не нужна
+
+        # Проверка прошёл ли интервал переключения
+        if current_time - self.last_switch_time > self.switch_interval:
+            self.current_texture_index = (self.current_texture_index + 1) % len(self.water_textures)
+            new_texture = self.water_textures[self.current_texture_index]
+            self.image = pygame.transform.scale(new_texture, (self.size, self.size))
+            self.last_switch_time = current_time
 
 
-# Класс уровня, который загружает карту и создаёт стены
+
+
 class Level:
+    """
+        Класс уровня, загружающий и хранящий карту, текстуры и группы спрайтов.
+
+        Атрибуты:
+            tile_size (int): Размер одного тайла в пикселях.
+            wall_texture (pygame.Surface): Текстура стены.
+            floor_texture (pygame.Surface): Текстура пола.
+            water_texture1 (pygame.Surface): Первая текстура воды для анимации.
+            water_texture2 (pygame.Surface): Вторая текстура воды для анимации.
+            walls (pygame.sprite.Group): Группа спрайтов стен.
+            floors (pygame.sprite.Group): Группа спрайтов пола.
+            waters (pygame.sprite.Group): Группа спрайтов воды.
+            list_level_map (list): Список строк карты уровня.
+            level_width (int): Ширина уровня в тайлах.
+            level_height (int): Высота уровня в тайлах.
+            level_pixel_width (int): Ширина уровня в пикселях.
+            level_pixel_height (int): Высота уровня в пикселях.
+            spawn_point (tuple): Координаты точки спавна игрока.
+            spawn_monster (list): Список координат спавнеров монстров.
+    """
     def __init__(self, level_map):
+        """
+                Инициализация уровня.
+
+                Args:
+                    level_map : Файл, представляющих карту уровня.
+        """
         self.tile_size = utils.TILE_SIZE[0]
-        self.wall_texture = pygame.image.load('tempelates/wall_block.jpg').convert()
-        self.floor_texture = pygame.image.load('tempelates/floor_block.jpg').convert()
+        self.wall_texture = pygame.image.load('tempelates/wall2.jpg').convert()
+        self.floor_texture = pygame.image.load('tempelates/floor2.jpg').convert()
+        self.water_texture1 = pygame.image.load('tempelates/water_r.jpg').convert()
+        self.water_texture2 = pygame.image.load('tempelates/water_l.jpg').convert()
         self.walls = pygame.sprite.Group()
         self.floors = pygame.sprite.Group()
+        self.waters = pygame.sprite.Group()
+        self.list_level_map = []
+        # Считывание файла
+        for s in level_map:
+            self.list_level_map.append(s)
 
-        self.level_width = len(level_map[0])  # Ширина в тайлах
-        self.level_height = len(level_map)  # Высота в тайлах
+        self.level_width = len(self.list_level_map[0])  # Ширина в тайлах
+        self.level_height = len(self.list_level_map)  # Высота в тайлах
         self.level_pixel_width = self.level_width * self.tile_size
         self.level_pixel_height = self.level_height * self.tile_size
 
-        # # Убираем центровку уровня
-        # self.offset_x = 0
-        # self.offset_y = 0
-
-        self.load_level(level_map)
+        self.load_level(self.list_level_map)        # Загрузка уровня
 
     def load_level(self, level_map):
-        self.spawn_point = None
-        self.spawn_monster = []
+        """
+                Загружает уровень из списка строк, создавая объекты и добавляя их в группы.
 
+                Args:
+                    level_map (list): Список строк карты уровня.
+        """
+        self.spawn_point = None
+        self.spawn_monster = []         # Список спавнеров монстров
+
+            # -- Генерация блоков и др --
         for y, row in enumerate(level_map):
             for x, char in enumerate(row):
                 pos_x = x * self.tile_size
@@ -49,12 +120,20 @@ class Level:
 
                 if char == '#':
 
-                    wall = Wall(pos_x, pos_y, self.tile_size, self.wall_texture)
+                    wall = Obstacle(pos_x, pos_y, self.tile_size, self.wall_texture)
                     self.walls.add(wall)
 
-                if char == '.' or char == '$' or char == '*':
+                if char == '-':
+                    water = Obstacle(pos_x, pos_y, self.tile_size, self.water_texture1,
+                                     water_textures=(self.water_texture1, self.water_texture2))
+                    self.waters.add(water)
 
-                    floor = Floor(pos_x, pos_y, self.tile_size, self.floor_texture)
+
+
+                if char in ('.', '$', '*'):
+
+                    floor = Obstacle(pos_x, pos_y, self.tile_size, self.floor_texture)
+
                     if char == '$':
                         self.spawn_point = (pos_x, pos_y)
 
@@ -64,13 +143,13 @@ class Level:
                     self.floors.add(floor)
 
 
-
-
-
-
-                # Здесь можно добавить обработку других символов для пола, врагов и т.д.
-
     # Метод для отрисовки уровня (всех стен)
     def draw(self, surface):
-        self.walls.draw(surface)  # Отрисовываем все стены на переданной поверхности
+        """
+                     Метод отрисовывает все стены на переданной поверхности
+
+                     Args:
+                         surface (pygame.Surface): Экран
+             """
+        self.walls.draw(surface)
         self.floors.draw(surface)

@@ -12,7 +12,7 @@ class MonsterSpawner:
         self.monsters = pygame.sprite.Group()
         self.all_monster_bullets = pygame.sprite.Group()
 
-    def update(self, target, walls, bullets, screen, camera):
+    def update(self, target, walls, bullets, screen, camera, waters):
         current_time = pygame.time.get_ticks()
         if (current_time - self.last_spawn_time > self.spawn_delay
                 and len(self.monsters) < self.max_monsters):
@@ -24,7 +24,7 @@ class MonsterSpawner:
             self.last_spawn_time = current_time
 
         for monster in self.monsters:
-            monster.update(target.rect, walls, bullets)
+            monster.update(target.rect, walls, bullets, waters)
             if isinstance(monster, Pluvaka):
                 print('monster.draw_bullets(screen, camera)')
                 monster.draw_bullets(screen, camera)  # Камеру передавайте при необходимости
@@ -32,6 +32,6 @@ class MonsterSpawner:
                 self.all_monster_bullets.add(monster.monster_bullets)
 
                 # Обновляем все пули монстров
-            self.all_monster_bullets.update(walls, target)
+            self.all_monster_bullets.update(walls, target, waters)
 
 

@@ -1,57 +1,57 @@
-import pygame
-import sys
+import pygame, sys, utils
 from Camera import Camera
-from select import select
-
-import utils
 from Select_sreen import CharacterSelectScreen
 from level import Level
-from level_map import *
 from Spawner import MonsterSpawner
 from Monsters import Pluvaka
-
-# Импортируем классы персонажей
 from Characters import Tank, Engineer, Stormtrooper
 
 def draw_with_camera(group, surface, camera):
+    '''
+    Метод отрисовки с учетом камеры
+    :param group:
+    :param surface:
+    :param camera:
+    :return:
+    '''
     for sprite in group:
         surface.blit(sprite.image, camera.apply(sprite))
 
 def main():
     pygame.init()
 
-    screen = pygame.display.set_mode((utils.WIDTH, utils.HEIGHT))
+    screen = pygame.display.set_mode((utils.WIDTH, utils.HEIGHT))           # Игровое окно
     pygame.display.set_caption("p.s.g")
     bg_image = pygame.image.load('tempelates/background_game.png').convert()
     background = pygame.transform.scale(bg_image, (utils.WIDTH, utils.HEIGHT))
-    level = Level(map2)  # Создаём уровень
-    camera = Camera(level.level_pixel_width, level.level_pixel_height)  # Инициализируем камеру после создания уровня
-    running = True
+
+    level = Level(open(r'map.txt'))                                         # Создание уровня
+    camera = Camera(level.level_pixel_width, level.level_pixel_height)      # Инициализация камеры
+
+
     clock = pygame.time.Clock()
-    character_select_screen = CharacterSelectScreen()  # объявление экарна выбора персонажа
+    character_select_screen = CharacterSelectScreen()                       # Объявление экарна выбора персонажа
+
     game_started = False
+    running = True
+    player = None                                                           # Переменная для выбранного персонажа
 
-    player = None  # Переменная для выбранного персонажа
-
-    spawner = MonsterSpawner(
+    spawner = MonsterSpawner(                                               # Объявление спавнера
         spawn_points=level.spawn_monster,
-        spawn_delay=2000, #Милисекунды
-        max_monsters=1
+        spawn_delay=5000, # Милисекунды
+        max_monsters=10
     )
 
-    while running:
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_click = pygame.mouse.get_pressed()
+    while running:                                                          # Основной игровой цикл
 
-        # Обработка событий
-        for event in pygame.event.get():
+        for event in pygame.event.get():                                    # Обработка событий
             if event.type == pygame.QUIT:
                 running = False
 
             if not game_started:
                 character_select_screen.handle_event(event)
 
-        # --- Меню ---
+                                                                            # --- Меню ---
         if not game_started:
             character_select_screen.draw(screen)
 
@@ -59,7 +59,7 @@ def main():
                 selected = character_select_screen.characters[character_select_screen.selected_character]
                 name = selected['name']
 
-                if name == "TANK":
+                if name == "TANK":                                          # Выбор персонажа
                     player = Tank(pos=level.spawn_point)
                 elif name == "ENGINEER":
                     player = Engineer(pos=level.spawn_point)
@@ -69,20 +69,22 @@ def main():
                 game_started = True
                 level.initialized = False
 
-        # --- Игра ---
+                                                                            # --- Игра ---
         else:
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_click = pygame.mouse.get_pressed()
 
-
-            # Игровая логика
+                                                                            # Игровая логика
             if not hasattr(level, 'initialized'):
                 player.rect.center = level.spawn_point
                 level.initialized = True
-
+                                                                            # Вычисление положения указателя мыши с учетом камеры
             world_mouse_pos = (mouse_pos[0] + camera.offset.x, mouse_pos[1] + camera.offset.y)
-            player.handle_shooting(world_mouse_pos, mouse_click, level.walls)
+            player.handle_shooting(world_mouse_pos, mouse_click, level.walls) # Метод стрельбы
 
-            keys = pygame.key.get_pressed()
-            player_dead = player.update(keys, level.walls, spawner.monsters, spawner.all_monster_bullets)
+            keys = pygame.key.get_pressed()                                   # Последовательность логических значений, представляющих состояние каждой клавиши на клавиатуре
+            player_dead = player.update(keys, level.walls, spawner.monsters, spawner.all_monster_bullets, level.waters) # Обновление игрока
+
             #Смерть и выход в меню выбора
             if player_dead:
                 game_started = False
@@ -91,32 +93,29 @@ def main():
                 character_select_screen.reset()  # Сбрасываем выбор персонажа
                 continue
 
-            spawner.update(player, level.walls, player.bullets, screen, camera)
-            spawner.all_monster_bullets.update(level.walls, player)
+            spawner.update(player, level.walls, player.bullets, screen, camera, level.waters)     # Обновление спавнера
+            spawner.all_monster_bullets.update(level.walls, player, level.waters)                 #Обновление токсичного шара
 
-            # Отрисовка
-            camera.update(player)
-            screen.blit(background, (0, 0))
+
+            camera.update(player)                                                                 # Обновление камеры
+            screen.blit(background, (0, 0))                                                  # Отрисовка заднего фона
+
 
             collided_bullets = pygame.sprite.spritecollide(player, spawner.all_monster_bullets, True)
-            for bullet in collided_bullets:
+            current_time = pygame.time.get_ticks()
+
+            for water_tile in level.waters:                               # Анимация воды
+                water_tile.water_animation(current_time)
+            for bullet in collided_bullets:                               # Попадание в игрока токсичным шаром
                 player.health -= bullet.damage
 
-            for floor in level.floors:
-                screen.blit(floor.image, camera.apply(floor))
-            for wall in level.walls:
-                screen.blit(wall.image, camera.apply(wall))
-
-            draw_with_camera(spawner.monsters, screen, camera)
-
-            for bullet in spawner.all_monster_bullets:
-                print('bullet')
-                screen.blit(bullet.image, camera.apply(bullet))
-
-            for bullet in player.bullets:
-                screen.blit(bullet.image, camera.apply(bullet))
-
-            screen.blit(player.image, camera.apply(player))
+            draw_with_camera(level.waters, screen, camera)                # Отрисовка воды
+            draw_with_camera(level.floors, screen, camera)                # Отрисовка пола
+            draw_with_camera(level.walls, screen, camera)                 # Отрисовка стен
+            draw_with_camera(spawner.monsters, screen, camera)            # Отрисовка монстров
+            draw_with_camera(spawner.all_monster_bullets, screen, camera) # Отрисовка токсичных шаров
+            draw_with_camera(player.bullets, screen, camera)              # Отрисовка снарядов игрока
+            screen.blit(player.image, camera.apply(player))               # Отрисовка игрока
 
         pygame.display.flip()
         clock.tick(60)

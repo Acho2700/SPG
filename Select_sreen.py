@@ -34,18 +34,23 @@ class CharacterSelectScreen:
             self.char_rects.append(pygame.Rect(x, y, w, h))
 
     def draw(self, screen):
+        # Задний фон
         bg_image = pygame.image.load('tempelates/background_select_characters.jpg').convert()
         background = pygame.transform.scale(bg_image, (utils.WIDTH, utils.HEIGHT))
         screen.blit(background, (0, 0))
+
+        # Текст на экране
         font = pygame.font.Font('tempelates/alagard-12px-unicode.ttf', 64)
         text = font.render("ВЫБЕРИ ПЕРСОНАЖА", True, (250, 250, 250))
         screen.blit(text, (utils.WIDTH // 2 - 350, 0))
 
+        # Отрисовка изображений персонажей
         for i, character in enumerate(self.characters):
             rect = self.char_rects[i]
             screen.blit(character["image"], (rect.x, rect.y))
             pygame.draw.rect(screen, '#d3cece', rect, 7)
 
+        # Отрисовка изображений оружия
         for i, gun in enumerate(self.guns):
             x = 200 + i * 450
             y = 550
@@ -53,6 +58,7 @@ class CharacterSelectScreen:
             rect = pygame.Rect(x, y, gun["image"].get_width(), gun["image"].get_height())
             pygame.draw.rect(screen, '#515151', rect, 7)
 
+        # Отрисовка имен персонажей
         font_character = pygame.font.Font('tempelates/alagard-12px-unicode.ttf', 30)
         text_s = font_character.render("STORMTROOPER", True, (250, 250, 250))
         screen.blit(text_s, (200 + 0 * 600, 500))
@@ -71,5 +77,5 @@ class CharacterSelectScreen:
         return self.selected_character is not None
 
     def reset(self):
-        self.selected_character = None  # Сбрасываем выбор
+        self.selected_character = None
 
