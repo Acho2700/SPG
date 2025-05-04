@@ -5,6 +5,7 @@ from level import Level
 from Spawner import MonsterSpawner
 from Monsters import Pluvaka
 from Characters import Tank, Engineer, Stormtrooper
+from Death_screen import death_screen
 
 def draw_with_camera(group, surface, camera):
     '''
@@ -28,6 +29,8 @@ def main():
     level = Level(open(r'map.txt'))                                         # Создание уровня
     camera = Camera(level.level_pixel_width, level.level_pixel_height)      # Инициализация камеры
 
+    skull_image = pygame.image.load('tempelates/screen_dead_scull.png')
+    skull_image = pygame.transform.scale(skull_image, (300, 300))
 
     clock = pygame.time.Clock()
     character_select_screen = CharacterSelectScreen()                       # Объявление экарна выбора персонажа
@@ -87,6 +90,7 @@ def main():
 
             #Смерть и выход в меню выбора
             if player_dead:
+                death_screen(screen, skull_image)
                 game_started = False
                 player = None
                 spawner.monsters.empty()
