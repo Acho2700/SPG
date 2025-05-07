@@ -31,6 +31,11 @@ class Character(pygame.sprite.Sprite):
         self.scaled_image = pygame.transform.scale(self.original_image, utils.TILE_SIZE)
         self.image = self.scaled_image
         self.rect = self.image.get_rect(center=pos)
+
+        self.hit_sound = pygame.mixer.Sound('tempelates/sounds/monstr-est-plot.mp3')
+        self.hit_sound.set_volume(0.1)
+        self.is_hit_sound_playing = False
+
         self.speed = speed
         self.direction = pygame.math.Vector2(0, 0)
         self.angle = 0
@@ -72,7 +77,11 @@ class Character(pygame.sprite.Sprite):
 
         # Проверяем получение урона от монстров и пуль
         self.taking_damage(monsters, monster_bullets)
+
         if self.health <= 0:
+            self.hit_sound.stop()
+            for monster in monsters: # Выклбчение звуков для всех монстров
+                monster.sound.stop()
             self.kill()
             return True  # Персонаж умер
         return False
@@ -100,22 +109,27 @@ class Character(pygame.sprite.Sprite):
             self.rect.y -= dy
 
     def taking_damage(self, monsters, monster_bullets):
-        """
-                Обрабатывает получение урона от столкновения с монстрами и пулями монстров.
-
-                Args:
-                    monsters (pygame.sprite.Group): Группа монстров.
-                    monster_bullets (pygame.sprite.Group): Группа пуль монстров.
-        """
-
-        if pygame.sprite.spritecollide(self, monsters, False):
-            damage = monsters.sprites()[0].damage  # Урон от первого столкнувшегося монстра
-            self.health -= damage
-
-        # Урон от пуль монстров
+        collided_monsters = pygame.sprite.spritecollide(self, monsters, False)
         collided_bullets = pygame.sprite.spritecollide(self, monster_bullets, True)
+
+        damage_taken = 0
+
+        for monster in collided_monsters:
+            damage_taken += monster.damage
+
         for bullet in collided_bullets:
-            self.health -= bullet.damage
+            damage_taken += bullet.damage
+
+        if damage_taken > 0:
+            self.health -= damage_taken
+            if not self.is_hit_sound_playing:
+                self.hit_sound.play(-1)  # Запускаем звук в зацикленном режиме
+                self.is_hit_sound_playing = True
+        else:
+            # Если урона нет, останавливаем звук, если он играет
+            if self.is_hit_sound_playing:
+                self.hit_sound.stop()
+                self.is_hit_sound_playing = False
 
 
 # Дочерние классы персонажей
@@ -145,6 +159,9 @@ class Tank(Character):
         self.image_with_axe = pygame.transform.scale(self.image_with_axe, self.rect.size)
         self.original_image = self.image
 
+        self.shoot_sound = pygame.mixer.Sound('tempelates/sounds/vzmah-toporom.mp3')
+        self.shoot_sound.set_volume(0.1)
+
         self.throw_cooldown = 0
         self.throw_delay = 60     # Задержка между бросками (примерно 1 секунда при 60 FPS)
         self.bullets = pygame.sprite.Group()
@@ -159,7 +176,7 @@ class Tank(Character):
                     mouse_click (tuple): Состояние кнопок мыши (например, pygame.mouse.get_pressed()).
                     walls (pygame.sprite.Group): Группа стен для проверки коллизий пуль.
         """
-        # Удаляем мертвые пули из группы
+        # Удаляем мертвые топоры из группы
         self.bullets = pygame.sprite.Group([b for b in self.bullets if b.alive()])
 
         # Проверка есть ли активный топор
@@ -180,6 +197,7 @@ class Tank(Character):
             new_axe = Axe(owner=self, target_pos=target_pos)
             self.bullets.add(new_axe)
             self.throw_cooldown = self.throw_delay
+            self.shoot_sound.play()
 
         # Обновление кулдауна
         if self.throw_cooldown > 0:
@@ -213,6 +231,8 @@ class Engineer(Character):
         self.burst_size = 30  # Размер очереди
         self.burst_delay = 2  # Задержка между выстрелами (в кадрах)
         self.shoot_cooldown = 0  # Таймер задержки
+        self.shoot_sound = pygame.mixer.Sound('tempelates/sounds/engeenir_shot.mp3')
+        self.shoot_sound.set_volume(0.1)
         self.bullets = pygame.sprite.Group()
         self.health = 100
 
@@ -231,8 +251,12 @@ class Engineer(Character):
             self.burst_count = self.burst_size
             self.shoot_cooldown = 60   # Задержка перед началом очереди
 
+        if self.burst_count == 29:
+            self.shoot_sound.play()
+
         # Выполнение выстрелов из очереди с задержкой между ними
         if self.burst_count > 0 and self.shoot_cooldown <= 0:
+
             bullet = FireBullet(
                 start_pos=self.rect.center,
                 target_pos=target_pos,
@@ -240,6 +264,7 @@ class Engineer(Character):
             self.bullets.add(bullet)
             self.burst_count -= 1
             self.shoot_cooldown = self.burst_delay   # Задержка между выстрелами
+
 
         # Уменьшаем таймер задержки, если он активен
         if self.shoot_cooldown > 0:
@@ -273,9 +298,10 @@ class Stormtrooper(Character):
         self.burst_size = 3  # Размер очереди
         self.burst_delay = 7  # Задержка между выстрелами (в кадрах)
         self.shoot_cooldown = 0  # Таймер задержки
+        self.shoot_sound = pygame.mixer.Sound('tempelates/sounds/stormtrooper_shot.mp3')
+        self.shoot_sound.set_volume(0.1)
         self.bullets = pygame.sprite.Group()
         self.health = 150
-
 
     def handle_shooting(self, target_pos, mouse_click, walls):
         """
@@ -301,6 +327,9 @@ class Stormtrooper(Character):
             self.bullets.add(bullet)
             self.burst_count -= 1
             self.shoot_cooldown = self.burst_delay
+            self.shoot_sound.play()
+            print('Воспроизведен звук')
+
 
         # Уменьшаем таймер задержки, если он активен
         if self.shoot_cooldown > 0:

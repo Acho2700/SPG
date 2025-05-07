@@ -14,7 +14,7 @@ class CharacterSelectScreen:
 
         GUN_STORMTROOPER = pygame.image.load('tempelates/Stormtrooper/ak-47.png')
         GUN_ENGINEER = pygame.image.load('tempelates/Engineer/flamethrower.png')
-        GUN_TANK = pygame.image.load('tempelates/Tank/axe3.png')
+        GUN_TANK = pygame.image.load('tempelates/Tank/axe4.png')
 
         self.guns = [
             {"text": "Описание оружия", "image": pygame.transform.scale(GUN_STORMTROOPER, (128 * 2, 100 * 2))},

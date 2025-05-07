@@ -35,6 +35,7 @@ class RifleBullet(Bullet):
             damage=4
         )
 
+
     def update(self, walls):
         self.rect.centerx += self.velocity.x
         self.rect.centery += self.velocity.y
@@ -55,6 +56,7 @@ class FireBullet(Bullet):
         )
         self.range = 500
         self.start_pos = pygame.math.Vector2(start_pos)
+
 
     def update(self, walls):
         self.rect.centerx += self.velocity.x
@@ -81,6 +83,12 @@ class Axe(Bullet):
         self.original_image = pygame.image.load('tempelates/Tank/axe2.png').convert_alpha()
         self.original_image = pygame.transform.scale(self.original_image, (50, 50))
 
+        self.fly_sound = pygame.mixer.Sound('tempelates/sounds/proletayuschiy-obyekt-v-vozduhe.mp3')
+        self.fly_sound.set_volume(0.1)
+
+        self.hitting_the_wall = pygame.mixer.Sound('tempelates/sounds/udar-jeleznyim-mechom.mp3')
+        self.hitting_the_wall.set_volume(0.8)
+
         self.owner = owner  # Ссылка на персонажа
         self.rotation_angle = 0 # Текущий угол поворота (градусы)
         self.rotation_speed = 25 # Скорость вращения (градусов за кадр)
@@ -91,10 +99,12 @@ class Axe(Bullet):
         # Движение вперед/назад
         if not self.is_returning:
             self.rect.center += self.velocity
+            self.fly_sound.play()
         else:
             return_dir = (self.owner.rect.center - pygame.math.Vector2(self.rect.center)).normalize()
             self.rect.centerx += return_dir.x * 5 * 2.5
             self.rect.centery += return_dir.y * 5 * 2.5
+            self.fly_sound.play()
 
         # Вращение
         self.rotation_angle = (self.rotation_angle + self.rotation_speed) % 360

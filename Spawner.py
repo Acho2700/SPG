@@ -26,7 +26,6 @@ class MonsterSpawner:
         for monster in self.monsters:
             monster.update(target.rect, walls, bullets, waters)
             if isinstance(monster, Pluvaka):
-                print('monster.draw_bullets(screen, camera)')
                 monster.draw_bullets(screen, camera)  # Камеру передавайте при необходимости
 
                 self.all_monster_bullets.add(monster.monster_bullets)

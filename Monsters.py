@@ -1,6 +1,7 @@
 import pygame, utils
 import math
 from pygame.math import Vector2
+from music import MusicPlayer
 
 
 class Monster(pygame.sprite.Sprite):
@@ -15,6 +16,11 @@ class Monster(pygame.sprite.Sprite):
         self.animation_speed = 0.1
         self.animation_timer = 0
 
+        self.sound_radius = 1000
+        self.sound = pygame.mixer.Sound('tempelates/sounds/beg-monstra-v-peschere.mp3')
+        self.sound.set_volume(0.1)
+        self.is_running_sound_playing = False
+
         self.speed = speed
         self.health = health
         self.damage = damage
@@ -23,6 +29,9 @@ class Monster(pygame.sprite.Sprite):
         self.bullets = pygame.sprite.Group()
 
     def update(self, player_rect, walls, bullets, waters):
+
+        moving = False
+
         # Анимация
         self.animation_timer += self.animation_speed
         if self.animation_timer >= 1:
@@ -35,6 +44,7 @@ class Monster(pygame.sprite.Sprite):
             direction = pygame.math.Vector2(player_rect.center) - pygame.math.Vector2(self.rect.center)
             if direction.length() > 0:
                 direction = direction.normalize()
+                moving = True
 
             new_angle = direction.angle_to(pygame.math.Vector2(0, -1))
 
@@ -54,10 +64,21 @@ class Monster(pygame.sprite.Sprite):
                     or pygame.sprite.spritecollide(self, waters, False)):
                 self.rect.y -= direction.y * self.speed
 
+        distance = pygame.math.Vector2(self.rect.center).distance_to(player_rect.center)
+        if moving and distance <= self.sound_radius:
+            if not self.is_running_sound_playing:
+                self.sound.play(-1)  # -1 для зацикливания звука
+                self.is_running_sound_playing = True
+        else:
+            if self.is_running_sound_playing:
+                self.sound.stop()
+                self.is_running_sound_playing = False
+
         # Получение урона
         self.taking_damage(bullets)
-        #Смерть
+        #Смерть монстра
         if self.health <= 0:
+            self.sound.stop()
             self.kill()
 
     def taking_damage(self, bullets):
@@ -78,7 +99,7 @@ class Kusaka(Monster):
             frames=frames,
             speed=5,
             health=100,
-            damage=1
+            damage=0.3
         )
 
 
@@ -99,6 +120,8 @@ class Pluvaka(Monster):
 
         self.monster_bullets = pygame.sprite.Group()
         self.last_shot_time = 0
+        self.spit_sound = pygame.mixer.Sound('tempelates/sounds/plevok-verblyuda.mp3')
+        self.spit_sound.set_volume(0.1)
 
     def update(self, player_rect, walls, bullets, waters):
         super().update(player_rect, walls, bullets, waters)
@@ -116,10 +139,13 @@ class Pluvaka(Monster):
         bullet = ToxicBullet(
             start_pos=self.rect.center,
             target_pos=target_pos,
-            speed=3,
+            speed=4,
             damage=15
         )
         self.monster_bullets.add(bullet)
+        distance = pygame.math.Vector2(self.rect.center).distance_to(target_pos)
+        if distance <= self.sound_radius:
+            self.spit_sound.play()
 
     def draw_bullets(self, surface, camera):
         for bullet in self.monster_bullets:
@@ -127,7 +153,7 @@ class Pluvaka(Monster):
 
 
 class ToxicBullet(pygame.sprite.Sprite):
-    def __init__(self, start_pos, target_pos, speed=1, damage=30):
+    def __init__(self, start_pos, target_pos, speed=4, damage=30):
         super().__init__()
         self.original_image = pygame.image.load('tempelates/monsters/toxic_ball.png').convert_alpha()
         self.image = pygame.transform.scale(self.original_image, (24, 24))

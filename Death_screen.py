@@ -1,14 +1,6 @@
 import pygame
 import time
 
-# Предположим, что у вас есть:
-# - screen - основное окно pygame
-# - clock - pygame.time.Clock() для контроля FPS
-# - skull_image - загруженное изображение черепа (pygame.Surface)
-# - your_font - ваш кастомный шрифт (pygame.font.Font или pygame.font.SysFont)
-# - game_started - флаг, что игра запущена
-# - player_dead - флаг смерти игрока
-
 def death_screen(screen, skull_image):
     """
     Показывает заставку смерти с черепом и надписью "your dead" на 2 секунды.
@@ -17,6 +9,8 @@ def death_screen(screen, skull_image):
     duration = 3000  # миллисекунды (2 секунды)
     font = pygame.font.Font('tempelates/alagard-12px-unicode.ttf', 90)
 
+    death_sound = pygame.mixer.Sound('tempelates/sounds/Death.mp3')
+
     while pygame.time.get_ticks() - start_time < duration:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -24,7 +18,7 @@ def death_screen(screen, skull_image):
                 exit()
 
         screen.fill((0, 0, 0))  # Черный фон
-
+        death_sound.play()
         # Рисуем череп по центру
         skull_rect = skull_image.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 70))
         screen.blit(skull_image, skull_rect)
