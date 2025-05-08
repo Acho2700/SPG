@@ -1,4 +1,6 @@
 import pygame, utils, random
+from Chest import Chest
+from potion import HealthPotion, SpeedPotion
 
 class Obstacle(pygame.sprite.Sprite):
     """
@@ -90,6 +92,7 @@ class Level:
         self.walls = pygame.sprite.Group()
         self.floors = pygame.sprite.Group()
         self.waters = pygame.sprite.Group()
+        self.chests = pygame.sprite.Group()
         self.list_level_map = []
         # Считывание файла
         for s in level_map:
@@ -100,7 +103,16 @@ class Level:
         self.level_pixel_width = self.level_width * self.tile_size
         self.level_pixel_height = self.level_height * self.tile_size
 
+        self.potions = pygame.sprite.Group()  # Группа для зелий
+        self.chest_potions = [HealthPotion, SpeedPotion]
+        self.player = None
+
         self.load_level(self.list_level_map)        # Загрузка уровня
+
+    def set_player(self, player):
+        self.player = player
+        for chest in self.chests:
+            chest.set_player(player)
 
     def load_level(self, level_map):
         """
@@ -111,6 +123,7 @@ class Level:
         """
         self.spawn_point = None
         self.spawn_monster = []         # Список спавнеров монстров
+        self.chest = None
 
             # -- Генерация блоков и др --
         for y, row in enumerate(level_map):
@@ -128,7 +141,20 @@ class Level:
                                      water_textures=(self.water_texture1, self.water_texture2))
                     self.waters.add(water)
 
-
+                if char in ('n', 's', 'w', 'e'):
+                    chest = Chest(
+                        closed_image_path='tempelates/chest_close.png',
+                        opened_image_path='tempelates/cheast_open.png',
+                        pos=(pos_x, pos_y),
+                        size=self.tile_size,
+                        direction=char,
+                        potion_group=self.potions,
+                        potion_classes=self.chest_potions,
+                        player=self.player
+                    )
+                    chest.set_potions(self.chest_potions)
+                    self.chests.add(chest)
+                    self.walls.add(chest)
 
                 if char in ('.', '$', '*'):
 
@@ -139,6 +165,7 @@ class Level:
 
                     if char == '*':
                         self.spawn_monster.append((pos_x, pos_y))
+
 
                     self.floors.add(floor)
 
@@ -151,5 +178,6 @@ class Level:
                      Args:
                          surface (pygame.Surface): Экран
              """
+
         self.walls.draw(surface)
         self.floors.draw(surface)

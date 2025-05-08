@@ -16,7 +16,7 @@ class Character(pygame.sprite.Sprite):
             health (int): Здоровье персонажа.
             bullets (pygame.sprite.Group): Группа пуль, выпущенных персонажем.
     """
-    def __init__(self, image_path, pos=(0, 0), speed=5, health=100):
+    def __init__(self, image_path, pos=(0, 0), speed=5, health=100, max_health=100):
         """
                Инициализация персонажа.
 
@@ -40,6 +40,7 @@ class Character(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2(0, 0)
         self.angle = 0
         self.health = health
+        self.max_health = max_health
         self.bullets = pygame.sprite.Group()
 
     def update(self, keys_pressed, walls, monsters, monster_bullets, waters):
@@ -77,6 +78,10 @@ class Character(pygame.sprite.Sprite):
 
         # Проверяем получение урона от монстров и пуль
         self.taking_damage(monsters, monster_bullets)
+        print(self.health)
+
+        if self.health > self.max_health:
+            self.health = self.max_health
 
         if self.health <= 0:
             self.hit_sound.stop()
@@ -154,7 +159,7 @@ class Tank(Character):
                     pos (tuple): Начальная позиция (x, y).
         """
 
-        super().__init__('tempelates/Tank/game_model_t_axe.png', pos, speed=5, health=100)
+        super().__init__('tempelates/Tank/game_model_t_axe.png', pos, speed=5, health=200, max_health=200)
         self.image_with_axe = pygame.image.load('tempelates/Tank/game_model_t-Photoroom.png').convert_alpha()
         self.image_with_axe = pygame.transform.scale(self.image_with_axe, self.rect.size)
         self.original_image = self.image
@@ -226,7 +231,7 @@ class Engineer(Character):
                 Args:
                     pos (tuple): Начальная позиция (x, y).
         """
-        super().__init__('tempelates/Engineer/game_model_e.png', pos, speed=5, health=100)
+        super().__init__('tempelates/Engineer/game_model_e.png', pos, speed=5, health=100, max_health=100)
         self.burst_count = 0  # Текущий счётчик очереди
         self.burst_size = 30  # Размер очереди
         self.burst_delay = 2  # Задержка между выстрелами (в кадрах)
@@ -293,7 +298,7 @@ class Stormtrooper(Character):
                 Args:
                     pos (tuple): Начальная позиция (x, y).
         """
-        super().__init__('tempelates/Stormtrooper/game_model_s.png', pos, speed=5, health=100)
+        super().__init__('tempelates/Stormtrooper/game_model_s.png', pos, speed=5, health=150, max_health=150)
         self.burst_count = 0  # Текущий счётчик очереди
         self.burst_size = 3  # Размер очереди
         self.burst_delay = 7  # Задержка между выстрелами (в кадрах)

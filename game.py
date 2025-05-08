@@ -29,8 +29,8 @@ def main():
     bg_image = pygame.image.load('tempelates/background_game.png').convert()
     background = pygame.transform.scale(bg_image, (utils.WIDTH, utils.HEIGHT))
 
-    level = Level(open(r'map.txt'))                                         # Создание уровня
-    camera = Camera(level.level_pixel_width, level.level_pixel_height)      # Инициализация камеры
+    # level = Level(open(r'map.txt'))                                         # Создание уровня
+    # camera = Camera(level.level_pixel_width, level.level_pixel_height)      # Инициализация камеры
 
     skull_image = pygame.image.load('tempelates/screen_dead_scull.png')
     skull_image = pygame.transform.scale(skull_image, (300, 300))
@@ -54,11 +54,11 @@ def main():
     running = True
     player = None                                                           # Переменная для выбранного персонажа
 
-    spawner = MonsterSpawner(                                               # Объявление спавнера
-        spawn_points=level.spawn_monster,
-        spawn_delay=2000, # Милисекунды
-        max_monsters=1
-    )
+    # spawner = MonsterSpawner(                                               # Объявление спавнера
+    #     spawn_points=level.spawn_monster,
+    #     spawn_delay=5000, # Милисекунды
+    #     max_monsters=19
+    # )
 
     while running:                                                          # Основной игровой цикл
 
@@ -77,6 +77,15 @@ def main():
             if character_select_screen.is_ready():
                 selected = character_select_screen.characters[character_select_screen.selected_character]
                 name = selected['name']
+                # -- Инициализация уровня в окне выбора --
+                level = Level(open(r'map.txt'))  # Создание уровня
+                camera = Camera(level.level_pixel_width, level.level_pixel_height)  # Инициализация камеры
+
+                spawner = MonsterSpawner(  # Объявление спавнера
+                    spawn_points=level.spawn_monster,
+                    spawn_delay=5000,  # Милисекунды
+                    max_monsters=19
+                )
 
                 if name == "TANK":                                          # Выбор персонажа
                     player = Tank(pos=level.spawn_point)
@@ -87,7 +96,7 @@ def main():
                 elif name == "STORMTROOPER":
                     player = Stormtrooper(pos=level.spawn_point)
                     health_bar = HealthBar(max_health=player.health, image='tempelates/health/main_model_s.png')
-
+                level.set_player(player)
                 game_started = True
                 level.initialized = False
 
@@ -123,16 +132,23 @@ def main():
             spawner.all_monster_bullets.update(level.walls, player, level.waters)                 #Обновление токсичного шара
 
 
+
             camera.update(player)                                                                 # Обновление камеры
             screen.blit(background, (0, 0))                                                  # Отрисовка заднего фона
 
             collided_bullets = pygame.sprite.spritecollide(player, spawner.all_monster_bullets, True)
             current_time = pygame.time.get_ticks()
 
+            level.chests.update(player.rect)
+            level.potions.update(player.rect)
+
             for water_tile in level.waters:                               # Анимация воды
                 water_tile.water_animation(current_time)
             for bullet in collided_bullets:                               # Попадание в игрока токсичным шаром
                 player.health -= bullet.damage
+            for chest in level.chests:
+                chest.update(player.rect)
+
 
             draw_with_camera(level.waters, screen, camera)                # Отрисовка воды
             draw_with_camera(level.floors, screen, camera)                # Отрисовка пола
@@ -142,8 +158,12 @@ def main():
             draw_with_camera(player.bullets, screen, camera)              # Отрисовка снарядов игрока
             screen.blit(player.image, camera.apply(player))               # Отрисовка игрока
 
+            for potion in level.potions:
+                screen.blit(potion.image, camera.apply(potion))
+
             health_bar.update(player.health)
             health_bar.draw(screen)
+
 
         music_player.update()
         pygame.display.flip()
