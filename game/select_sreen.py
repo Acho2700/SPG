@@ -1,10 +1,12 @@
-import pygame, utils
+import pygame, utils, os
+from paths import *
+
 
 class CharacterSelectScreen:
     def __init__(self):
-        STORMTROOPER = pygame.image.load('tempelates/Stormtrooper/main_model_s.png')
-        ENGINEER = pygame.image.load('tempelates/Engineer/main_model_e.png')
-        TANK = pygame.image.load('tempelates/Tank/main_model_t.png')
+        STORMTROOPER = pygame.image.load(os.path.join(ASSETS_DIR,'Stormtrooper/main_model_s.png'))
+        ENGINEER = pygame.image.load(os.path.join(ASSETS_DIR,'Engineer/main_model_e.png'))
+        TANK = pygame.image.load(os.path.join(ASSETS_DIR,'Tank/main_model_t.png'))
 
         self.characters = [
             {"name": "STORMTROOPER", "image": pygame.transform.scale(STORMTROOPER, (128 * 2, 200 * 2))},
@@ -12,9 +14,9 @@ class CharacterSelectScreen:
             {"name": "TANK", "image": pygame.transform.scale(TANK, (128 * 2, 200 * 2))}
         ]
 
-        GUN_STORMTROOPER = pygame.image.load('tempelates/Stormtrooper/ak-47.png')
-        GUN_ENGINEER = pygame.image.load('tempelates/Engineer/flamethrower.png')
-        GUN_TANK = pygame.image.load('tempelates/Tank/axe4.png')
+        GUN_STORMTROOPER = pygame.image.load(os.path.join(ASSETS_DIR,'Stormtrooper/ak-47.png'))
+        GUN_ENGINEER = pygame.image.load(os.path.join(ASSETS_DIR,'Engineer/flamethrower.png'))
+        GUN_TANK = pygame.image.load(os.path.join(ASSETS_DIR,'Tank/axe4.png'))
 
         self.guns = [
             {"text": "Описание оружия", "image": pygame.transform.scale(GUN_STORMTROOPER, (128 * 2, 100 * 2))},
@@ -23,6 +25,9 @@ class CharacterSelectScreen:
         ]
 
         self.selected_character = None
+
+        self.sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR,'sounds/sound_button.mp3'))
+        self.sound.set_volume(0.1)
 
         # Сохраняем координаты и размеры для каждого персонажа
         self.char_rects = []
@@ -35,12 +40,12 @@ class CharacterSelectScreen:
 
     def draw(self, screen):
         # Задний фон
-        bg_image = pygame.image.load('tempelates/background_select_characters.jpg').convert()
+        bg_image = pygame.image.load(os.path.join(ASSETS_DIR,'background_select_characters.jpg')).convert()
         background = pygame.transform.scale(bg_image, (utils.WIDTH, utils.HEIGHT))
         screen.blit(background, (0, 0))
 
         # Текст на экране
-        font = pygame.font.Font('tempelates/alagard-12px-unicode.ttf', 64)
+        font = pygame.font.Font(os.path.join(ASSETS_DIR,'alagard-12px-unicode.ttf'), 64)
         text = font.render("ВЫБЕРИ ПЕРСОНАЖА", True, (250, 250, 250))
         screen.blit(text, (utils.WIDTH // 2 - 350, 0))
 
@@ -59,7 +64,7 @@ class CharacterSelectScreen:
             pygame.draw.rect(screen, '#515151', rect, 7)
 
         # Отрисовка имен персонажей
-        font_character = pygame.font.Font('tempelates/alagard-12px-unicode.ttf', 30)
+        font_character = pygame.font.Font(os.path.join(ASSETS_DIR,'alagard-12px-unicode.ttf'), 30)
         text_s = font_character.render("STORMTROOPER", True, (250, 250, 250))
         screen.blit(text_s, (200 + 0 * 600, 500))
         text_e = font_character.render("ENGINEER", True, (250, 250, 250))
@@ -68,9 +73,10 @@ class CharacterSelectScreen:
         screen.blit(text_t, (70 + 2 * 560, 500))
 
     def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONUP:
             for i, rect in enumerate(self.char_rects):
                 if rect.collidepoint(event.pos):
+                    self.sound.play()
                     self.selected_character = i
 
     def is_ready(self):

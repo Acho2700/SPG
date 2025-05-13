@@ -1,5 +1,6 @@
 from PIL import Image
-
+from paths import *
+import os
 # Сопоставление цвета (R,G,B) к символу карты
 
 COLOR_TO_CHAR = {
@@ -38,4 +39,4 @@ def image_to_map_txt(image_path, output_txt_path):
     print(f"Карта успешно сохранена в {output_txt_path}")
 
 # Временно
-image_to_map_txt('tempelates/map_image.png', 'map.txt')
+image_to_map_txt(os.path.join(ASSETS_DIR, 'map_image.png'), os.path.join(DATA_DIR, 'map.txt'))

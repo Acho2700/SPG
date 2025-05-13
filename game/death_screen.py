@@ -1,5 +1,6 @@
-import pygame
+import pygame, os
 import time
+from paths import *
 
 def death_screen(screen, skull_image):
     """
@@ -7,9 +8,9 @@ def death_screen(screen, skull_image):
     """
     start_time = pygame.time.get_ticks()
     duration = 3000  # миллисекунды (2 секунды)
-    font = pygame.font.Font('tempelates/alagard-12px-unicode.ttf', 90)
+    font = pygame.font.Font(os.path.join(ASSETS_DIR, 'alagard-12px-unicode.ttf'), 90)
 
-    death_sound = pygame.mixer.Sound('tempelates/sounds/Death.mp3')
+    death_sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR, 'sounds/Death.mp3'))
 
     while pygame.time.get_ticks() - start_time < duration:
         for event in pygame.event.get():

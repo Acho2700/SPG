@@ -1,6 +1,7 @@
-import pygame, utils, random
-from Chest import Chest
+import pygame, utils, random, os
+from chest import Chest
 from potion import HealthPotion, SpeedPotion
+from paths import *
 
 class Obstacle(pygame.sprite.Sprite):
     """
@@ -85,10 +86,10 @@ class Level:
                     level_map : Файл, представляющих карту уровня.
         """
         self.tile_size = utils.TILE_SIZE[0]
-        self.wall_texture = pygame.image.load('tempelates/wall2.jpg').convert()
-        self.floor_texture = pygame.image.load('tempelates/floor2.jpg').convert()
-        self.water_texture1 = pygame.image.load('tempelates/water_r.jpg').convert()
-        self.water_texture2 = pygame.image.load('tempelates/water_l.jpg').convert()
+        self.wall_texture = pygame.image.load(os.path.join(ASSETS_DIR, 'wall2.jpg')).convert()
+        self.floor_texture = pygame.image.load(os.path.join(ASSETS_DIR, 'floor2.jpg')).convert()
+        self.water_texture1 = pygame.image.load(os.path.join(ASSETS_DIR, 'water_r.jpg')).convert()
+        self.water_texture2 = pygame.image.load(os.path.join(ASSETS_DIR, 'water_l.jpg')).convert()
         self.walls = pygame.sprite.Group()
         self.floors = pygame.sprite.Group()
         self.waters = pygame.sprite.Group()
@@ -143,8 +144,8 @@ class Level:
 
                 if char in ('n', 's', 'w', 'e'):
                     chest = Chest(
-                        closed_image_path='tempelates/chest_close.png',
-                        opened_image_path='tempelates/cheast_open.png',
+                        closed_image_path= os.path.join(ASSETS_DIR, 'chest_close.png'),
+                        opened_image_path=os.path.join(ASSETS_DIR, 'cheast_open.png'),
                         pos=(pos_x, pos_y),
                         size=self.tile_size,
                         direction=char,

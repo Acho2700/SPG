@@ -1,7 +1,8 @@
-import pygame, utils
+import pygame, utils, os
 import math
 from pygame.math import Vector2
 from music import MusicPlayer
+from paths import *
 
 
 class Monster(pygame.sprite.Sprite):
@@ -17,7 +18,7 @@ class Monster(pygame.sprite.Sprite):
         self.animation_timer = 0
 
         self.sound_radius = 1000
-        self.sound = pygame.mixer.Sound('tempelates/sounds/beg-monstra-v-peschere.mp3')
+        self.sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR, 'sounds/beg-monstra-v-peschere.mp3'))
         self.sound.set_volume(0.1)
         self.is_running_sound_playing = False
 
@@ -89,11 +90,19 @@ class Monster(pygame.sprite.Sprite):
 
 class Kusaka(Monster):
     def __init__(self):
-        frame1 = pygame.image.load('tempelates/monsters/kusaka_1.png')
-        frame2 = pygame.image.load('tempelates/monsters/kusaka_2.png').convert_alpha()
+        frame1 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/Kusaka_animation/1.png')).convert_alpha()
+        frame2 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/Kusaka_animation/2.png')).convert_alpha()
+        frame3 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/Kusaka_animation/3.png')).convert_alpha()
+        frame4 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/Kusaka_animation/4.png')).convert_alpha()
+        frame5 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/Kusaka_animation/5.png')).convert_alpha()
+        frame6 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/Kusaka_animation/6.png')).convert_alpha()
         frames = [
-            pygame.transform.scale(frame1, utils.TILE_SIZE),
-            pygame.transform.scale(frame2, utils.TILE_SIZE)
+            pygame.transform.scale(frame1, (80, 80)),
+            pygame.transform.scale(frame2, (80, 80)),
+            pygame.transform.scale(frame3, (80, 80)),
+            pygame.transform.scale(frame4, (80, 80)),
+            pygame.transform.scale(frame5, (80, 80)),
+            pygame.transform.scale(frame6, (80, 80)),
         ]
         super().__init__(
             frames=frames,
@@ -105,22 +114,28 @@ class Kusaka(Monster):
 
 class Pluvaka(Monster):
     def __init__(self):
-        frame1 = pygame.image.load('tempelates/monsters/pluvaka_go_1.png').convert_alpha()
-        frame2 = pygame.image.load('tempelates/monsters/pluvaka_go_2.png').convert_alpha()
+        frame1 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/pluvaka_animation/1.png')).convert_alpha()
+        frame2 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/pluvaka_animation/2.png')).convert_alpha()
+        frame3 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/pluvaka_animation/3.png')).convert_alpha()
+        frame4 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/pluvaka_animation/4.png')).convert_alpha()
+        frame5 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/pluvaka_animation/5.png')).convert_alpha()
         frames = [
-            pygame.transform.scale(frame1, (80, 64)),
-            pygame.transform.scale(frame2, (80, 64))
+            pygame.transform.scale(frame1, (80, 100)),
+            pygame.transform.scale(frame2, (80, 100)),
+            pygame.transform.scale(frame3, (80, 100)),
+            pygame.transform.scale(frame4, (80, 100)),
+            pygame.transform.scale(frame5, (80, 100)),
         ]
         super().__init__(
             frames=frames,
             speed=2,
-            health=150,
+            health=100,
             damage=1
         )
 
         self.monster_bullets = pygame.sprite.Group()
         self.last_shot_time = 0
-        self.spit_sound = pygame.mixer.Sound('tempelates/sounds/plevok-verblyuda.mp3')
+        self.spit_sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR, 'sounds/plevok-verblyuda.mp3'))
         self.spit_sound.set_volume(0.1)
 
     def update(self, player_rect, walls, bullets, waters):
@@ -153,9 +168,9 @@ class Pluvaka(Monster):
 
 
 class ToxicBullet(pygame.sprite.Sprite):
-    def __init__(self, start_pos, target_pos, speed=4, damage=30):
+    def __init__(self, start_pos, target_pos, speed=4, damage=1):
         super().__init__()
-        self.original_image = pygame.image.load('tempelates/monsters/toxic_ball.png').convert_alpha()
+        self.original_image = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/toxic_ball.png')).convert_alpha()
         self.image = pygame.transform.scale(self.original_image, (24, 24))
         self.rect = self.image.get_rect(center=start_pos)
 

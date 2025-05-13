@@ -1,13 +1,16 @@
-import pygame, sys, utils
-from Camera import Camera
-from Select_sreen import CharacterSelectScreen
+import pygame, sys, utils, os
+from camera import Camera
+from select_sreen import CharacterSelectScreen
 from level import Level
-from Spawner import MonsterSpawner
-from Monsters import Pluvaka
-from Characters import Tank, Engineer, Stormtrooper
-from Death_screen import death_screen
+from spawner import MonsterSpawner
+from monsters import Pluvaka
+from characters import Tank, Engineer, Stormtrooper
+from death_screen import death_screen
 from healthbar import HealthBar
 from music import MusicPlayer
+from pause_screen import pause_menu
+from paths import *
+
 
 def draw_with_camera(group, surface, camera):
     '''
@@ -26,39 +29,30 @@ def main():
 
     screen = pygame.display.set_mode((utils.WIDTH, utils.HEIGHT))           # Игровое окно
     pygame.display.set_caption("p.s.g")
-    bg_image = pygame.image.load('tempelates/background_game.png').convert()
+    bg_image = pygame.image.load(os.path.join(ASSETS_DIR, 'background_game.png')).convert()
     background = pygame.transform.scale(bg_image, (utils.WIDTH, utils.HEIGHT))
 
-    # level = Level(open(r'map.txt'))                                         # Создание уровня
-    # camera = Camera(level.level_pixel_width, level.level_pixel_height)      # Инициализация камеры
-
-    skull_image = pygame.image.load('tempelates/screen_dead_scull.png')
+    skull_image = pygame.image.load(os.path.join(ASSETS_DIR, 'screen_dead_scull.png'))
     skull_image = pygame.transform.scale(skull_image, (300, 300))
 
     clock = pygame.time.Clock()
     character_select_screen = CharacterSelectScreen()                       # Объявление экарна выбора персонажа
 
     menu_tracks = [
-        # 'tempelates/sounds/music/stuart-chatwood-explore-the-ruins.mp3',
-        'tempelates/sounds/music/stuart-chatwood-the-hamlet.mp3',
+        os.path.join(ASSETS_DIR, 'sounds/music/stuart-chatwood-the-hamlet.mp3'),
     ]
 
     game_tracks = [
-        'tempelates/sounds/music/stuart-chatwood-explore-the-ruins.mp3',
-        # 'tempelates/sounds/music/stuart-chatwood-the-hamlet.mp3',
+        os.path.join(ASSETS_DIR, 'sounds/music/stuart-chatwood-explore-the-ruins.mp3'),
     ]
 
     music_player = MusicPlayer(menu_tracks, game_tracks, volume=0.1)
 
-    game_started = False
     running = True
     player = None                                                           # Переменная для выбранного персонажа
+    game_state = 'character_select'
 
-    # spawner = MonsterSpawner(                                               # Объявление спавнера
-    #     spawn_points=level.spawn_monster,
-    #     spawn_delay=5000, # Милисекунды
-    #     max_monsters=19
-    # )
+
 
     while running:                                                          # Основной игровой цикл
 
@@ -66,11 +60,21 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-            if not game_started:
+            if game_state == 'character_select':
                 character_select_screen.handle_event(event)
 
-                                                                            # --- Меню ---
-        if not game_started:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                # Вызов меню паузы
+                result = pause_menu(screen, clock, character_select_screen)
+                if result == 'select_screen':
+                    game_state = 'character_select'
+                    player = None
+                    spawner.monsters.empty()
+                    character_select_screen.reset()  # Сбрасываем выбор персонажа
+                    continue
+
+                                                                            # --- Меню выбора персонажа ---
+        if game_state == 'character_select':
             character_select_screen.draw(screen)
             music_player.switch_to_menu()
 
@@ -78,30 +82,30 @@ def main():
                 selected = character_select_screen.characters[character_select_screen.selected_character]
                 name = selected['name']
                 # -- Инициализация уровня в окне выбора --
-                level = Level(open(r'map.txt'))  # Создание уровня
+                level = Level(open(os.path.join(os.path.abspath(os.path.join(BASE_DIR, '..', 'data')), 'map.txt')))  # Создание уровня
                 camera = Camera(level.level_pixel_width, level.level_pixel_height)  # Инициализация камеры
 
                 spawner = MonsterSpawner(  # Объявление спавнера
                     spawn_points=level.spawn_monster,
-                    spawn_delay=5000,  # Милисекунды
+                    spawn_delay=3000,  # Милисекунды
                     max_monsters=19
                 )
 
                 if name == "TANK":                                          # Выбор персонажа
                     player = Tank(pos=level.spawn_point)
-                    health_bar = HealthBar(max_health=player.health, image='tempelates/health/main_model_t.png')
+                    health_bar = HealthBar(max_health=player.health, image=os.path.join(ASSETS_DIR, 'health/main_model_t.png'))
                 elif name == "ENGINEER":
                     player = Engineer(pos=level.spawn_point)
-                    health_bar = HealthBar(max_health=player.health, image='tempelates/health/main_model_e.png')
+                    health_bar = HealthBar(max_health=player.health, image=os.path.join(ASSETS_DIR, 'health/main_model_e.png'))
                 elif name == "STORMTROOPER":
                     player = Stormtrooper(pos=level.spawn_point)
-                    health_bar = HealthBar(max_health=player.health, image='tempelates/health/main_model_s.png')
+                    health_bar = HealthBar(max_health=player.health, image=os.path.join(ASSETS_DIR, 'health/main_model_s.png'))
                 level.set_player(player)
-                game_started = True
                 level.initialized = False
+                game_state = 'game'
 
                                                                             # --- Игра ---
-        else:
+        elif game_state == 'game':
             music_player.switch_to_game()
 
             mouse_pos = pygame.mouse.get_pos()
@@ -122,10 +126,10 @@ def main():
             #Смерть и выход в меню выбора
             if player_dead:
                 death_screen(screen, skull_image)
-                game_started = False
                 player = None
                 spawner.monsters.empty()
                 character_select_screen.reset()  # Сбрасываем выбор персонажа
+                game_state = 'character_select'
                 continue
 
             spawner.update(player, level.walls, player.bullets, screen, camera, level.waters)     # Обновление спавнера

@@ -1,13 +1,14 @@
-import pygame
+import pygame, os
 import random
+from paths import *
 
 
 class Potion(pygame.sprite.Sprite):
-    def __init__(self, image_path, pos, sound):
+    def __init__(self, image_path, size, pos, sound):
         super().__init__()
         self.original_image = pygame.image.load(image_path).convert_alpha()
         self.original_image = self.original_image
-        self.image = pygame.transform.scale(self.original_image, (32, 40))
+        self.image = pygame.transform.scale(self.original_image, size)
         self.rect = self.image.get_rect(center=pos)
 
         self.sound = pygame.mixer.Sound(sound)
@@ -42,7 +43,11 @@ class Potion(pygame.sprite.Sprite):
 
 class HealthPotion(Potion):
     def __init__(self, pos):
-        super().__init__('tempelates/health_potion.png', pos, 'tempelates/sounds/sound_potion.mp3')
+        super().__init__(os.path.join(ASSETS_DIR, 'health_potion.png'),
+                         (32, 40),
+                         pos,
+                         os.path.join(ASSETS_DIR, 'sounds/sound_potion.mp3')
+                         )
         self.heal_amount = 20
 
     def on_pickup(self):
@@ -52,7 +57,11 @@ class HealthPotion(Potion):
 
 class SpeedPotion(Potion):
     def __init__(self, pos):
-        super().__init__('tempelates/speed_potion.png', pos, 'tempelates/sounds/sound_book.mp3')
+        super().__init__(os.path.join(ASSETS_DIR, 'speed_potion.png'),
+                         (40, 40),
+                         pos,
+                         os.path.join(ASSETS_DIR, 'sounds/sound_book.mp3')
+                         )
         self.speed_amount = 2
         self.effect_duration = 10000
 

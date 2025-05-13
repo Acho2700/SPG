@@ -1,4 +1,5 @@
-import pygame, utils
+import pygame, utils, os
+from paths import *
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -27,7 +28,7 @@ class Bullet(pygame.sprite.Sprite):
 class RifleBullet(Bullet):
     def __init__(self, start_pos, target_pos, speed=15, damage=5):
         super().__init__(
-            image_path='tempelates/Stormtrooper/ak_patron.png',
+            image_path=os.path.join(ASSETS_DIR, 'Stormtrooper/ak_patron.png'),
             size=(16, 8),
             start_pos=start_pos,
             target_pos=target_pos,
@@ -47,7 +48,7 @@ class RifleBullet(Bullet):
 class FireBullet(Bullet):
     def __init__(self, start_pos, target_pos, speed=12, damage=1):
         super().__init__(
-            image_path='tempelates/Engineer/fire_patron.png',
+            image_path=os.path.join(ASSETS_DIR, 'Engineer/fire_patron.png'),
             size=(32, 32),
             start_pos=start_pos,
             target_pos=target_pos,
@@ -73,20 +74,20 @@ class FireBullet(Bullet):
 class Axe(Bullet):
     def __init__(self, owner, target_pos, speed=12, damage=5):
         super().__init__(
-            image_path='tempelates/Tank/axe2.png',
+            image_path=os.path.join(ASSETS_DIR, 'Tank/axe2.png'),
             size=(50, 50),
             start_pos=owner.rect.center,
             target_pos=target_pos,
             speed=speed,
             damage=4
         )
-        self.original_image = pygame.image.load('tempelates/Tank/axe2.png').convert_alpha()
+        self.original_image = pygame.image.load(os.path.join(ASSETS_DIR, 'Tank/axe2.png')).convert_alpha()
         self.original_image = pygame.transform.scale(self.original_image, (50, 50))
 
-        self.fly_sound = pygame.mixer.Sound('tempelates/sounds/proletayuschiy-obyekt-v-vozduhe.mp3')
+        self.fly_sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR, 'sounds/proletayuschiy-obyekt-v-vozduhe.mp3'))
         self.fly_sound.set_volume(0.1)
 
-        self.hitting_the_wall = pygame.mixer.Sound('tempelates/sounds/udar-jeleznyim-mechom.mp3')
+        self.hitting_the_wall = pygame.mixer.Sound(os.path.join(ASSETS_DIR, 'sounds/udar-jeleznyim-mechom.mp3'))
         self.hitting_the_wall.set_volume(0.8)
 
         self.owner = owner  # Ссылка на персонажа

@@ -1,5 +1,7 @@
-import pygame, random
+import pygame, random, os
 from potion import HealthPotion, SpeedPotion
+from paths import *
+
 
 class Chest(pygame.sprite.Sprite):
     def __init__(self, closed_image_path, opened_image_path, pos, size, direction='n', potion_group=None, potion_classes=None, player=None):
@@ -15,7 +17,7 @@ class Chest(pygame.sprite.Sprite):
         self.opened_image = pygame.image.load(opened_image_path).convert_alpha()
         self.opened_image = pygame.transform.scale(self.opened_image, (size, size))
 
-        self.sound = pygame.mixer.Sound('tempelates/sounds/open-magic-chest.mp3')
+        self.sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR, 'sounds/open-magic-chest.mp3'))
         self.sound.set_volume(0.1)
 
         angle = 0
@@ -64,24 +66,16 @@ class Chest(pygame.sprite.Sprite):
 
     def open(self):
         """Открывает сундук и меняет изображение."""
-        print('Открыли')
         self.sound.play()
         self.is_opened = True
         self.image = self.opened_image
         self.drop_potion()
 
     def drop_potion(self):
-        print(f'potion_group type: {type(self.potion_group)}, value: {self.potion_group==True}')
-        print(f'potion_classes type: {type(self.potion_classes)}, value: {self.potion_classes==True}')
-        print(f'player: {self.player==True}')
         if  self.potion_classes and self.player:
-            print('Условия выполнены, создаём зелье')
             PotionClass = random.choice(self.potion_classes)
             potion = PotionClass(self.rect.center)
             potion.player = self.player
-            print(self.potion_group)
-            print(self.potion_classes)
+
             self.potion_group.add(potion)  # добавляем в группу спрайтов
-            print(self.potion_group)
         else:
-            print('Условия не выполнены, зелье не создаётся')

@@ -1,5 +1,6 @@
-import pygame, utils
-from Projectile import RifleBullet, FireBullet, Axe
+import pygame, utils, os
+from projectile import RifleBullet, FireBullet, Axe
+from paths import *
 
 class Character(pygame.sprite.Sprite):
     """
@@ -16,7 +17,7 @@ class Character(pygame.sprite.Sprite):
             health (int): Здоровье персонажа.
             bullets (pygame.sprite.Group): Группа пуль, выпущенных персонажем.
     """
-    def __init__(self, image_path, pos=(0, 0), speed=5, health=100, max_health=100):
+    def __init__(self, image_path, pos=(0, 0), speed=5, max_speed=9, health=100, max_health=100):
         """
                Инициализация персонажа.
 
@@ -32,11 +33,12 @@ class Character(pygame.sprite.Sprite):
         self.image = self.scaled_image
         self.rect = self.image.get_rect(center=pos)
 
-        self.hit_sound = pygame.mixer.Sound('tempelates/sounds/monstr-est-plot.mp3')
+        self.hit_sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR, 'sounds/monstr-est-plot.mp3'))
         self.hit_sound.set_volume(0.1)
         self.is_hit_sound_playing = False
 
         self.speed = speed
+        self.max_speed = max_speed
         self.direction = pygame.math.Vector2(0, 0)
         self.angle = 0
         self.health = health
@@ -78,10 +80,12 @@ class Character(pygame.sprite.Sprite):
 
         # Проверяем получение урона от монстров и пуль
         self.taking_damage(monsters, monster_bullets)
-        print(self.health)
 
         if self.health > self.max_health:
             self.health = self.max_health
+
+        if self.speed > self.max_speed:
+            self.speed = self.max_speed
 
         if self.health <= 0:
             self.hit_sound.stop()
@@ -159,12 +163,12 @@ class Tank(Character):
                     pos (tuple): Начальная позиция (x, y).
         """
 
-        super().__init__('tempelates/Tank/game_model_t_axe.png', pos, speed=5, health=200, max_health=200)
-        self.image_with_axe = pygame.image.load('tempelates/Tank/game_model_t-Photoroom.png').convert_alpha()
+        super().__init__(os.path.join(ASSETS_DIR, 'Tank/game_model_t_axe.png'), pos, speed=5, health=200, max_health=200)
+        self.image_with_axe = pygame.image.load(os.path.join(ASSETS_DIR, 'Tank/game_model_t-Photoroom.png')).convert_alpha()
         self.image_with_axe = pygame.transform.scale(self.image_with_axe, self.rect.size)
         self.original_image = self.image
 
-        self.shoot_sound = pygame.mixer.Sound('tempelates/sounds/vzmah-toporom.mp3')
+        self.shoot_sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR,'sounds/vzmah-toporom.mp3'))
         self.shoot_sound.set_volume(0.1)
 
         self.throw_cooldown = 0
@@ -231,12 +235,12 @@ class Engineer(Character):
                 Args:
                     pos (tuple): Начальная позиция (x, y).
         """
-        super().__init__('tempelates/Engineer/game_model_e.png', pos, speed=5, health=100, max_health=100)
+        super().__init__(os.path.join(ASSETS_DIR,'Engineer/game_model_e.png'), pos, speed=5, health=100, max_health=100)
         self.burst_count = 0  # Текущий счётчик очереди
         self.burst_size = 30  # Размер очереди
         self.burst_delay = 2  # Задержка между выстрелами (в кадрах)
         self.shoot_cooldown = 0  # Таймер задержки
-        self.shoot_sound = pygame.mixer.Sound('tempelates/sounds/engeenir_shot.mp3')
+        self.shoot_sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR,'sounds/engeenir_shot.mp3'))
         self.shoot_sound.set_volume(0.1)
         self.bullets = pygame.sprite.Group()
         self.health = 100
@@ -298,12 +302,12 @@ class Stormtrooper(Character):
                 Args:
                     pos (tuple): Начальная позиция (x, y).
         """
-        super().__init__('tempelates/Stormtrooper/game_model_s.png', pos, speed=5, health=150, max_health=150)
+        super().__init__(os.path.join(ASSETS_DIR,'Stormtrooper/game_model_s.png'), pos, speed=5, health=150, max_health=150)
         self.burst_count = 0  # Текущий счётчик очереди
         self.burst_size = 3  # Размер очереди
         self.burst_delay = 7  # Задержка между выстрелами (в кадрах)
         self.shoot_cooldown = 0  # Таймер задержки
-        self.shoot_sound = pygame.mixer.Sound('tempelates/sounds/stormtrooper_shot.mp3')
+        self.shoot_sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR,'sounds/stormtrooper_shot.mp3'))
         self.shoot_sound.set_volume(0.1)
         self.bullets = pygame.sprite.Group()
         self.health = 150
@@ -333,7 +337,6 @@ class Stormtrooper(Character):
             self.burst_count -= 1
             self.shoot_cooldown = self.burst_delay
             self.shoot_sound.play()
-            print('Воспроизведен звук')
 
 
         # Уменьшаем таймер задержки, если он активен

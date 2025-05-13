@@ -1,4 +1,5 @@
 import pygame
+from paths import *
 
 class HealthBar:
     """
@@ -23,7 +24,7 @@ class HealthBar:
         self.health_color = (0, 255, 0)       # Зеленый цвет (здоровье)
         self.border_color = (255, 255, 255)   # Белая рамка
 
-        self.image = pygame.image.load('tempelates/health/healthbar.png')
+        self.image = pygame.image.load(os.path.join(ASSETS_DIR, 'health/healthbar.png'))
         # self.image = pygame.transform.scale(self.image, (128 * 2, 200 * 2))
         self.image = pygame.transform.scale(self.image, (500, 180))
 
