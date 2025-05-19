@@ -36,7 +36,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.current_texture_index = 0
         self.last_switch_time = 0
         self.switch_interval = 500
-    def water_animation(self, current_time):
+    def animation(self, current_time):
         """
                 Обновляет анимацию воды, переключая текстуры с заданным интервалом.
 
@@ -90,10 +90,16 @@ class Level:
         self.floor_texture = pygame.image.load(os.path.join(ASSETS_DIR, 'floor2.jpg')).convert()
         self.water_texture1 = pygame.image.load(os.path.join(ASSETS_DIR, 'water_r.jpg')).convert()
         self.water_texture2 = pygame.image.load(os.path.join(ASSETS_DIR, 'water_l.jpg')).convert()
+        self.portal_texture1 = pygame.image.load(os.path.join(ASSETS_DIR, 'portal_1.png')).convert()
+        self.portal_texture2 = pygame.image.load(os.path.join(ASSETS_DIR, 'portal_2.png')).convert()
+        self.portal_texture3 = pygame.image.load(os.path.join(ASSETS_DIR, 'portal_3.png')).convert()
         self.walls = pygame.sprite.Group()
+        self.portals = pygame.sprite.Group()
         self.floors = pygame.sprite.Group()
         self.waters = pygame.sprite.Group()
         self.chests = pygame.sprite.Group()
+        self.potions = pygame.sprite.Group()  # Группа для зелий
+
         self.list_level_map = []
         # Считывание файла
         for s in level_map:
@@ -104,7 +110,6 @@ class Level:
         self.level_pixel_width = self.level_width * self.tile_size
         self.level_pixel_height = self.level_height * self.tile_size
 
-        self.potions = pygame.sprite.Group()  # Группа для зелий
         self.chest_potions = [HealthPotion, SpeedPotion]
         self.player = None
 
@@ -139,8 +144,18 @@ class Level:
 
                 if char == '-':
                     water = Obstacle(pos_x, pos_y, self.tile_size, self.water_texture1,
-                                     water_textures=(self.water_texture1, self.water_texture2))
+                                     water_textures=(self.water_texture1,
+                                                     self.water_texture2
+                                                     ))
                     self.waters.add(water)
+
+                if char == '0':
+                    portal = Obstacle(pos_x, pos_y, self.tile_size, self.water_texture1,
+                                     water_textures=(self.portal_texture1,
+                                                     self.portal_texture2,
+                                                     self.portal_texture3
+                                                     ))
+                    self.portals.add(portal)
 
                 if char in ('n', 's', 'w', 'e'):
                     chest = Chest(
@@ -171,14 +186,4 @@ class Level:
                     self.floors.add(floor)
 
 
-    # Метод для отрисовки уровня (всех стен)
-    def draw(self, surface):
-        """
-                     Метод отрисовывает все стены на переданной поверхности
 
-                     Args:
-                         surface (pygame.Surface): Экран
-             """
-
-        self.walls.draw(surface)
-        self.floors.draw(surface)

@@ -37,6 +37,7 @@ class Character(pygame.sprite.Sprite):
         self.hit_sound.set_volume(0.1)
         self.is_hit_sound_playing = False
 
+        self.next_level = False
         self.speed = speed
         self.max_speed = max_speed
         self.direction = pygame.math.Vector2(0, 0)
@@ -45,7 +46,7 @@ class Character(pygame.sprite.Sprite):
         self.max_health = max_health
         self.bullets = pygame.sprite.Group()
 
-    def update(self, keys_pressed, walls, monsters, monster_bullets, waters):
+    def update(self, keys_pressed, walls, monsters, monster_bullets, waters, portals):
         """
                Обновляет состояние персонажа: движение, поворот, получение урона.
 
@@ -72,7 +73,7 @@ class Character(pygame.sprite.Sprite):
             self.angle = direction.angle_to(pygame.math.Vector2(0, -1))
 
         # Двигаем персонажа с учётом коллизий
-        self.move(dx, dy, walls, waters)
+        self.move(dx, dy, walls, waters, portals)
 
         # Поворачиваем изображение персонажа под текущий угол
         self.image = pygame.transform.rotate(self.scaled_image, self.angle)
@@ -95,7 +96,7 @@ class Character(pygame.sprite.Sprite):
             return True  # Персонаж умер
         return False
 
-    def move(self, dx, dy, walls, waters):
+    def move(self, dx, dy, walls, waters, portals):
         """
                 Перемещает персонажа с учётом коллизий со стенами и водой.
 
@@ -116,6 +117,10 @@ class Character(pygame.sprite.Sprite):
         self.rect.y += dy
         if pygame.sprite.spritecollide(self, walls, False) or pygame.sprite.spritecollide(self, waters, False):
             self.rect.y -= dy
+
+        if pygame.sprite.spritecollide(self, portals, False):
+            self.next_level = True
+
 
     def taking_damage(self, monsters, monster_bullets):
         collided_monsters = pygame.sprite.spritecollide(self, monsters, False)

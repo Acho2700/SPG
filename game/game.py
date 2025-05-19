@@ -5,7 +5,7 @@ from level import Level
 from spawner import MonsterSpawner
 from monsters import Pluvaka
 from characters import Tank, Engineer, Stormtrooper
-from death_screen import death_screen
+from popup_screen import death_or_victory_screen
 from healthbar import HealthBar
 from music import MusicPlayer
 from pause_screen import pause_menu
@@ -32,8 +32,11 @@ def main():
     bg_image = pygame.image.load(os.path.join(ASSETS_DIR, 'background_game.png')).convert()
     background = pygame.transform.scale(bg_image, (utils.WIDTH, utils.HEIGHT))
 
-    skull_image = pygame.image.load(os.path.join(ASSETS_DIR, 'screen_dead_scull.png'))
-    skull_image = pygame.transform.scale(skull_image, (300, 300))
+    death_image = pygame.image.load(os.path.join(ASSETS_DIR, 'screen_dead_scull.png'))
+    death_image = pygame.transform.scale(death_image, (300, 300))
+
+    victory_image = pygame.image.load(os.path.join(ASSETS_DIR, 'screen_victory.png'))
+    victory_image = pygame.transform.scale(victory_image, (300, 400))
 
     clock = pygame.time.Clock()
     character_select_screen = CharacterSelectScreen()                       # Объявление экарна выбора персонажа
@@ -47,6 +50,9 @@ def main():
     ]
 
     music_player = MusicPlayer(menu_tracks, game_tracks, volume=0.1)
+
+    LEVELS = ['lvl_1.txt', 'lvl_2.txt']  # по порядку
+    current_level_index = 0
 
     running = True
     player = None                                                           # Переменная для выбранного персонажа
@@ -82,13 +88,13 @@ def main():
                 selected = character_select_screen.characters[character_select_screen.selected_character]
                 name = selected['name']
                 # -- Инициализация уровня в окне выбора --
-                level = Level(open(os.path.join(os.path.abspath(os.path.join(BASE_DIR, '..', 'data')), 'map.txt')))  # Создание уровня
+                level = Level(open(os.path.join(os.path.abspath(os.path.join(BASE_DIR, '..', 'data')), LEVELS[0])))  # Создание уровня
                 camera = Camera(level.level_pixel_width, level.level_pixel_height)  # Инициализация камеры
 
                 spawner = MonsterSpawner(  # Объявление спавнера
                     spawn_points=level.spawn_monster,
                     spawn_delay=3000,  # Милисекунды
-                    max_monsters=19
+                    max_monsters=30
                 )
 
                 if name == "TANK":                                          # Выбор персонажа
@@ -101,6 +107,7 @@ def main():
                     player = Stormtrooper(pos=level.spawn_point)
                     health_bar = HealthBar(max_health=player.health, image=os.path.join(ASSETS_DIR, 'health/main_model_s.png'))
                 level.set_player(player)
+
                 level.initialized = False
                 game_state = 'game'
 
@@ -121,13 +128,37 @@ def main():
 
 
             keys = pygame.key.get_pressed()                                   # Последовательность логических значений, представляющих состояние каждой клавиши на клавиатуре
-            player_dead = player.update(keys, level.walls, spawner.monsters, spawner.all_monster_bullets, level.waters) # Обновление игрока
+            player_dead = player.update(keys, level.walls, spawner.monsters, spawner.all_monster_bullets, level.waters, level.portals) # Обновление игрока
+
+            if player.next_level:
+                current_level_index += 1
+                if current_level_index < len(LEVELS):
+                    level = Level(open(os.path.join(DATA_DIR, LEVELS[current_level_index])))
+                    camera = Camera(level.level_pixel_width, level.level_pixel_height)
+                    player.rect.center = level.spawn_point
+                    player.next_level = False  # сбрасываем флаг!
+
+                    spawner = MonsterSpawner(
+                        spawn_points=level.spawn_monster,
+                        spawn_delay=3000,
+                        max_monsters=30
+                    )
+                    level.set_player(player)
+                else:
+                    death_or_victory_screen(screen, victory_image, "you victory", (0, 0, 255))
+                    player = None
+                    spawner.monsters.empty()
+                    current_level_index = 0
+                    character_select_screen.reset()  # Сбрасываем выбор персонажа
+                    game_state = 'character_select'
+                    continue
 
             #Смерть и выход в меню выбора
             if player_dead:
-                death_screen(screen, skull_image)
+                death_or_victory_screen(screen, death_image, "you died", (255, 0, 0))
                 player = None
                 spawner.monsters.empty()
+                current_level_index = 0
                 character_select_screen.reset()  # Сбрасываем выбор персонажа
                 game_state = 'character_select'
                 continue
@@ -147,7 +178,9 @@ def main():
             level.potions.update(player.rect)
 
             for water_tile in level.waters:                               # Анимация воды
-                water_tile.water_animation(current_time)
+                water_tile.animation(current_time)
+            for portal_tile in level.portals:                             # Анимация портала
+                portal_tile.animation(current_time)
             for bullet in collided_bullets:                               # Попадание в игрока токсичным шаром
                 player.health -= bullet.damage
             for chest in level.chests:
@@ -157,6 +190,7 @@ def main():
             draw_with_camera(level.waters, screen, camera)                # Отрисовка воды
             draw_with_camera(level.floors, screen, camera)                # Отрисовка пола
             draw_with_camera(level.walls, screen, camera)                 # Отрисовка стен
+            draw_with_camera(level.portals, screen, camera)               # Отрисовка порталов
             draw_with_camera(spawner.monsters, screen, camera)            # Отрисовка монстров
             draw_with_camera(spawner.all_monster_bullets, screen, camera) # Отрисовка токсичных шаров
             draw_with_camera(player.bullets, screen, camera)              # Отрисовка снарядов игрока

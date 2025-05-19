@@ -39,4 +39,6 @@ def image_to_map_txt(image_path, output_txt_path):
     print(f"Карта успешно сохранена в {output_txt_path}")
 
 # Временно
-image_to_map_txt(os.path.join(ASSETS_DIR, 'map_image.png'), os.path.join(DATA_DIR, 'map.txt'))
+img = input('Введите название файла с изображением карты: ')
+txt = input('Введите название для созданного файла: ')
+image_to_map_txt(os.path.join(DATA_DIR, img), os.path.join(DATA_DIR, txt))

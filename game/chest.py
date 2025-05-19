@@ -78,4 +78,3 @@ class Chest(pygame.sprite.Sprite):
             potion.player = self.player
 
             self.potion_group.add(potion)  # добавляем в группу спрайтов
-        else:

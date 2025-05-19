@@ -6,7 +6,7 @@ from paths import *
 
 
 class Monster(pygame.sprite.Sprite):
-    def __init__(self, frames, speed=2, health=10, damage=10):
+    def __init__(self, frames, speed=2, health=10, damage=10.0):
         super().__init__()
         self.frames = frames
         self.current_frame = 0
@@ -138,12 +138,18 @@ class Pluvaka(Monster):
         self.spit_sound = pygame.mixer.Sound(os.path.join(ASSETS_DIR, 'sounds/plevok-verblyuda.mp3'))
         self.spit_sound.set_volume(0.1)
 
+        self.shoot_radius = 600  # радиус стрельбы в пикселях
+        self.sound_radius = 500  # радиус слышимости звука
+
     def update(self, player_rect, walls, bullets, waters):
         super().update(player_rect, walls, bullets, waters)
 
+        # Рассчитываем расстояние до игрока
+        distance_to_player = pygame.math.Vector2(self.rect.center).distance_to(player_rect.center)
+
         # Стрельба по таймеру
         now = pygame.time.get_ticks()
-        if now - self.last_shot_time > 3000:  # 3 секунды
+        if distance_to_player <= self.shoot_radius and now - self.last_shot_time > 3000:  # 3 секунды
             self.shoot(player_rect.center)
             self.last_shot_time = now
 
