@@ -1,4 +1,4 @@
-import pygame, os
+import pygame, os,sys
 from paths import *
 
 class Button:
@@ -62,7 +62,8 @@ def pause_menu(screen, clock, character_select_screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
+                sys.exit()
+
 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouse_pos = pygame.mouse.get_pos()
@@ -81,7 +82,8 @@ def pause_menu(screen, clock, character_select_screen):
                             return 'select_screen'
                         elif btn == buttons[2]:
                             pygame.quit()
-                            exit()
+                            sys.exit()
+
                     btn.set_pressed(False)
 
             elif event.type == pygame.KEYDOWN:

@@ -1,4 +1,4 @@
-import pygame, os
+import pygame, os, sys
 import time
 from paths import *
 
@@ -16,7 +16,8 @@ def death_or_victory_screen(screen, image, text, color=(255, 0, 0)):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
+                sys.exit()
+
 
         screen.fill((0, 0, 0))  # Черный фон
         death_sound.play()

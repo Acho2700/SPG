@@ -88,7 +88,7 @@ def main():
                 selected = character_select_screen.characters[character_select_screen.selected_character]
                 name = selected['name']
                 # -- Инициализация уровня в окне выбора --
-                level = Level(open(os.path.join(os.path.abspath(os.path.join(BASE_DIR, '..', 'data')), LEVELS[0])))  # Создание уровня
+                level = Level(open(os.path.join(DATA_DIR, LEVELS[0])))  # Создание уровня
                 camera = Camera(level.level_pixel_width, level.level_pixel_height)  # Инициализация камеры
 
                 spawner = MonsterSpawner(  # Объявление спавнера
