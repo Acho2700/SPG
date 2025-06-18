@@ -1,7 +1,8 @@
-import pygame, utils, random, os
-from chest import Chest
-from potion import HealthPotion, SpeedPotion
-from paths import *
+import pygame
+from game.models import utils
+from game.models.chest import Chest
+from game.models.potion import HealthPotion, SpeedPotion
+from game.controller.paths import *
 
 class Obstacle(pygame.sprite.Sprite):
     """

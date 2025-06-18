@@ -1,5 +1,5 @@
-import pygame, utils, os
-from paths import *
+import pygame
+from game.controller.paths import *
 
 
 class Bullet(pygame.sprite.Sprite):

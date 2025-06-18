@@ -1,6 +1,6 @@
 import pygame, os, sys
 import time
-from paths import *
+from game.controller.paths import *
 
 def death_or_victory_screen(screen, image, text, color=(255, 0, 0)):
     """Показывает заставку проигрыша или победы/"""

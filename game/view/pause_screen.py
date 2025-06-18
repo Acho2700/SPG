@@ -1,5 +1,5 @@
 import pygame, os,sys
-from paths import *
+from game.controller.paths import *
 
 class Button:
     """Класс кнопки"""

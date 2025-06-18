@@ -1,4 +1,6 @@
-import pygame, utils
+import pygame
+from . import utils
+
 
 class Camera:
     """

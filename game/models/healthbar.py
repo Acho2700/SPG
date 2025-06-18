@@ -1,5 +1,5 @@
 import pygame
-from paths import *
+from game.controller.paths import *
 
 class HealthBar:
     """

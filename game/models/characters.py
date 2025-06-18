@@ -1,6 +1,7 @@
-import pygame, utils, os
-from projectile import RifleBullet, FireBullet, Axe
-from paths import *
+import pygame, os
+from . import utils
+from .projectile import RifleBullet, FireBullet, Axe
+from game.controller.paths import *
 
 class Character(pygame.sprite.Sprite):
     """

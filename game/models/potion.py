@@ -1,6 +1,6 @@
 import pygame, os
 import random
-from paths import *
+from game.controller.paths import *
 
 
 class Potion(pygame.sprite.Sprite):

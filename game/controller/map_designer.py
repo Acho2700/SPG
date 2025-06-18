@@ -1,5 +1,5 @@
 from PIL import Image
-from paths import *
+from game.controller.paths import *
 import os
 # Сопоставление цвета (R,G,B) к символу карты
 

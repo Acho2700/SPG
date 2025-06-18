@@ -1,34 +1,28 @@
-import pygame, sys, utils, os
-from camera import Camera
-from select_sreen import CharacterSelectScreen
-from level import Level
-from spawner import MonsterSpawner
-from monsters import Pluvaka
-from characters import Tank, Engineer, Stormtrooper
-from popup_screen import death_or_victory_screen
-from healthbar import HealthBar
-from music import MusicPlayer
-from pause_screen import pause_menu
-from paths import *
+import pygame
+from game.models import utils
+from game.models.camera import Camera
+from game.view.select_sсreen import CharacterSelectScreen
+from game.models.level import Level
+from game.models.spawner import MonsterSpawner
+from game.models.characters import Tank, Engineer, Stormtrooper
+from game.view.popup_screen import death_or_victory_screen
+from game.models.healthbar import HealthBar
+from game.models.music import MusicPlayer
+from game.view.pause_screen import pause_menu
+from game.controller.paths import *
+from game.view.draw_with_camera import draw_with_camera
 
 
-def draw_with_camera(group, surface, camera):
-    '''
-    Метод отрисовки с учетом камеры
-    :param group:
-    :param surface:
-    :param camera:
-    :return:
-    '''
-    for sprite in group:
-        surface.blit(sprite.image, camera.apply(sprite))
 
 def main():
     pygame.init()
     pygame.mixer.init()
 
     screen = pygame.display.set_mode((utils.WIDTH, utils.HEIGHT))           # Игровое окно
-    pygame.display.set_caption("p.s.g")
+    pygame.display.set_caption("S.P.G")
+    icon_surface = pygame.image.load(os.path.join(ASSETS_DIR, 'ico.ico'))  # или .ico, .bmp
+    pygame.display.set_icon(icon_surface)
+
     bg_image = pygame.image.load(os.path.join(ASSETS_DIR, 'background_game.png')).convert()
     background = pygame.transform.scale(bg_image, (utils.WIDTH, utils.HEIGHT))
 

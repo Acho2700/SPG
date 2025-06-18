@@ -1,5 +1,5 @@
 import pygame
-from monsters import Kusaka, Pluvaka
+from game.models.monsters import Kusaka, Pluvaka
 import random
 
 

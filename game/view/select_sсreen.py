@@ -1,5 +1,8 @@
-import pygame, utils, os
-from paths import *
+import pygame
+import os
+from game.models import utils
+from game.controller.paths import *
+
 
 
 class CharacterSelectScreen:
@@ -54,7 +57,7 @@ class CharacterSelectScreen:
 
         # Текст на экране
         font = pygame.font.Font(os.path.join(ASSETS_DIR,'alagard-12px-unicode.ttf'), 64)
-        text = font.render("ВЫБЕРИ ПЕРСОНАЖА", True, (250, 250, 250))
+        text = font.render("SELECT CHARACTERS", True, (250, 250, 250))
         screen.blit(text, (utils.WIDTH // 2 - 350, 0))
 
         # Отрисовка изображений персонажей

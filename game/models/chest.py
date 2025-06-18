@@ -1,6 +1,6 @@
 import pygame, random, os
-from potion import HealthPotion, SpeedPotion
-from paths import *
+from game.models.potion import HealthPotion, SpeedPotion
+from game.controller.paths import *
 
 
 class Chest(pygame.sprite.Sprite):

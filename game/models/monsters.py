@@ -1,8 +1,6 @@
-import pygame, utils, os
-import math
+import pygame
 from pygame.math import Vector2
-from music import MusicPlayer
-from paths import *
+from game.controller.paths import *
 
 
 class Monster(pygame.sprite.Sprite):
