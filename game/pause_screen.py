@@ -2,7 +2,19 @@ import pygame, os,sys
 from paths import *
 
 class Button:
+    """Класс кнопки"""
     def __init__(self, rect, text, font, image=None, text_color=(152,106,71), text_color_pressed=(82, 56, 36)):
+        """
+                Инициализирует кнопку с заданными параметрами.
+
+                Args:
+                    rect (tuple): Координаты и размеры кнопки (x, y, width, height).
+                    text (str): Текст кнопки.
+                    font (pygame.font.Font): Шрифт для текста.
+                    image (pygame.Surface, optional): Изображение кнопки. По умолчанию None.
+                    text_color (tuple, optional): Цвет текста в обычном состоянии. По умолчанию (152,106,71).
+                    text_color_pressed (tuple, optional): Цвет текста при нажатии. По умолчанию (82, 56, 36).
+        """
         self.rect = pygame.Rect(rect)
         self.text = text
         self.font = font
@@ -19,11 +31,18 @@ class Button:
         self.render_text()
 
     def render_text(self):
+        """Перерисовывает текст кнопки с учётом текущего состояния (нажата/не нажата)."""
         color = self.text_color_pressed if self.pressed else self.text_color
         self.rendered_text = self.font.render(self.text, True, color)
         self.text_rect = self.rendered_text.get_rect(center=self.rect.center)
 
     def draw(self, surface):
+        """
+                Отрисовывает кнопку на заданной поверхности.
+
+                Args:
+                    surface (pygame.Surface): Поверхность, на которой будет отрисована кнопка.
+        """
         if self.image:
             img = pygame.transform.scale(self.image, (self.rect.width, self.rect.height))
             surface.blit(img, self.rect)
@@ -32,13 +51,32 @@ class Button:
         surface.blit(self.rendered_text, self.text_rect)
 
     def is_clicked(self, mouse_pos):
+        """Проверяет, находится ли курсор мыши в пределах кнопки."""
         return self.rect.collidepoint(mouse_pos)
 
     def set_pressed(self, pressed):
+        """
+                Устанавливает состояние нажатия кнопки и обновляет её внешний вид.
+
+                Args:
+                    pressed (bool): Новое состояние кнопки (True — нажата, False — не нажата).
+        """
         self.pressed = pressed
         self.render_text()
 
 def pause_menu(screen, clock, character_select_screen):
+    """
+        Отображает меню паузы с кнопками управления и обрабатывает пользовательский ввод.
+
+        Args:
+            screen (pygame.Surface): Основная поверхность игры для отображения меню.
+            clock (pygame.time.Clock): Объект для управления частотой кадров.
+            character_select_screen (callable): Функция или объект для перехода к экрану выбора персонажа.
+
+        Returns:
+            str: 'resume' для продолжения игры, 'select_screen' для перехода к выбору персонажа.
+            Прерывает выполнение программы при выборе выхода.
+    """
     pygame.mouse.set_visible(True)
     font = pygame.font.Font(os.path.join(ASSETS_DIR, 'alagard-12px-unicode.ttf'), 32)
     width, height = screen.get_size()

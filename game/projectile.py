@@ -3,7 +3,21 @@ from paths import *
 
 
 class Bullet(pygame.sprite.Sprite):
+    """
+        Базовый класс снаряда, движущегося в направлении цели с заданной скоростью и наносящего урон.
+    """
     def __init__(self, image_path, size, start_pos, target_pos, speed, damage):
+        """
+                Инициализирует снаряд с изображением, позицией, направлением и параметрами движения.
+
+                Args:
+                    image_path (str): Путь к изображению снаряда.
+                    size (tuple): Размер изображения (ширина, высота).
+                    start_pos (tuple): Начальная позиция снаряда (x, y).
+                    target_pos (tuple): Целевая позиция, в сторону которой летит снаряд.
+                    speed (float): Скорость движения снаряда.
+                    damage (int или float): Урон, наносимый при попадании.
+        """
         super().__init__()
         self.original_image = pygame.image.load(image_path).convert_alpha()
         self.original_image = pygame.transform.scale(self.original_image, size)
@@ -26,7 +40,17 @@ class Bullet(pygame.sprite.Sprite):
 
 
 class RifleBullet(Bullet):
+    """Класс снаряда винтовки с высокой скоростью и умеренным уроном."""
     def __init__(self, start_pos, target_pos, speed=15, damage=5):
+        """
+                Инициализирует снаряд винтовки.
+
+                Args:
+                    start_pos (tuple): Начальная позиция снаряда.
+                    target_pos (tuple): Целевая позиция.
+                    speed (float, optional): Скорость снаряда. По умолчанию 15.
+                    damage (int, optional): Урон снаряда. По умолчанию 5.
+        """
         super().__init__(
             image_path=os.path.join(ASSETS_DIR, 'Stormtrooper/ak_patron.png'),
             size=(16, 8),
@@ -38,6 +62,12 @@ class RifleBullet(Bullet):
 
 
     def update(self, walls):
+        """
+                Обновляет позицию снаряда и уничтожает его при столкновении со стеной.
+
+                Args:
+                    walls (pygame.sprite.Group): Группа стен для проверки коллизий.
+        """
         self.rect.centerx += self.velocity.x
         self.rect.centery += self.velocity.y
 
@@ -46,7 +76,17 @@ class RifleBullet(Bullet):
 
 
 class FireBullet(Bullet):
+    """Класс огненного снаряда с большим размером, меньшей скоростью и ограниченным радиусом действия."""
     def __init__(self, start_pos, target_pos, speed=12, damage=1):
+        """
+                Инициализирует огненный снаряд.
+
+                Args:
+                    start_pos (tuple): Начальная позиция снаряда.
+                    target_pos (tuple): Целевая позиция.
+                    speed (float, optional): Скорость снаряда. По умолчанию 12.
+                    damage (int, optional): Урон снаряда. По умолчанию 1.
+        """
         super().__init__(
             image_path=os.path.join(ASSETS_DIR, 'Engineer/fire_patron.png'),
             size=(32, 32),
@@ -60,6 +100,12 @@ class FireBullet(Bullet):
 
 
     def update(self, walls):
+        """
+                Обновляет позицию снаряда, уничтожает при столкновении со стеной или превышении радиуса действия.
+
+                Args:
+                    walls (pygame.sprite.Group): Группа стен для проверки коллизий.
+        """
         self.rect.centerx += self.velocity.x
         self.rect.centery += self.velocity.y
 
@@ -72,7 +118,17 @@ class FireBullet(Bullet):
 
 
 class Axe(Bullet):
+    """Класс снаряда-топора, который вращается и возвращается к владельцу после столкновения или превышения дальности."""
     def __init__(self, owner, target_pos, speed=12, damage=5):
+        """
+                Инициализирует топор с вращением и звуками полёта и удара.
+
+                Args:
+                    owner (pygame.sprite.Sprite): Владелец топора (персонаж).
+                    target_pos (tuple): Целевая позиция.
+                    speed (float, optional): Скорость полёта. По умолчанию 12.
+                    damage (int, optional): Урон топора. По умолчанию 5.
+        """
         super().__init__(
             image_path=os.path.join(ASSETS_DIR, 'Tank/axe2.png'),
             size=(50, 50),
@@ -97,6 +153,12 @@ class Axe(Bullet):
         self.range = 500
 
     def update(self, walls):
+        """
+                Обновляет позицию и вращение топора, обрабатывает столкновения и возврат к владельцу.
+
+                Args:
+                    walls (pygame.sprite.Group): Группа стен для проверки коллизий.
+        """
         # Движение вперед/назад
         if not self.is_returning:
             self.rect.center += self.velocity

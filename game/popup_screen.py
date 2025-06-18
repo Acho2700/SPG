@@ -3,9 +3,7 @@ import time
 from paths import *
 
 def death_or_victory_screen(screen, image, text, color=(255, 0, 0)):
-    """
-    Показывает заставку смерти с черепом и надписью "your dead" на 2 секунды.
-    """
+    """Показывает заставку проигрыша или победы/"""
     start_time = pygame.time.get_ticks()
     duration = 3000  # миллисекунды (2 секунды)
     font = pygame.font.Font(os.path.join(ASSETS_DIR, 'alagard-12px-unicode.ttf'), 90)

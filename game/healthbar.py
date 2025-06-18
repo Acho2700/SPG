@@ -57,10 +57,6 @@ class HealthBar:
         # Меняем цвет
         self.health_color = (155, 1, 0)
 
-        # Рисуем анфас персонажа
-
-
-
         # Рисуем заполненную часть
         pygame.draw.rect(surface, self.health_color, (self.x, self.y, fill_width, self.height))
 

@@ -4,6 +4,9 @@ from paths import *
 
 
 class Chest(pygame.sprite.Sprite):
+    """
+        Класс Сундука.
+    """
     def __init__(self, closed_image_path, opened_image_path, pos, size, direction='n', potion_group=None, potion_classes=None, player=None):
         """
         Args:
@@ -42,6 +45,7 @@ class Chest(pygame.sprite.Sprite):
         self.player = player  # ссылка на игрока, чтобы передать в зелье
 
     def set_potions(self, potion_classes):
+
         self.potion_classes = potion_classes
 
     def set_player(self, player):
@@ -72,6 +76,9 @@ class Chest(pygame.sprite.Sprite):
         self.drop_potion()
 
     def drop_potion(self):
+        """
+            Метод дропающий случайное зелье с сундука
+        """
         if  self.potion_classes and self.player:
             PotionClass = random.choice(self.potion_classes)
             potion = PotionClass(self.rect.center)

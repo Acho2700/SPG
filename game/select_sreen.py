@@ -3,7 +3,9 @@ from paths import *
 
 
 class CharacterSelectScreen:
+    """Класс экрана выбора персонажа с отображением доступных персонажей, их оружия и обработкой выбора."""
     def __init__(self):
+        """Загружает изображения персонажей и оружия, масштабирует их, инициализирует звуки и прямоугольники для кликов."""
         STORMTROOPER = pygame.image.load(os.path.join(ASSETS_DIR,'Stormtrooper/main_model_s.png'))
         ENGINEER = pygame.image.load(os.path.join(ASSETS_DIR,'Engineer/main_model_e.png'))
         TANK = pygame.image.load(os.path.join(ASSETS_DIR,'Tank/main_model_t.png'))
@@ -39,6 +41,12 @@ class CharacterSelectScreen:
             self.char_rects.append(pygame.Rect(x, y, w, h))
 
     def draw(self, screen):
+        """
+                Отрисовывает фон, заголовок, персонажей, их оружие и имена на экране.
+
+                Args:
+                    screen (pygame.Surface): Поверхность для отрисовки.
+        """
         # Задний фон
         bg_image = pygame.image.load(os.path.join(ASSETS_DIR,'background_select_characters.jpg')).convert()
         background = pygame.transform.scale(bg_image, (utils.WIDTH, utils.HEIGHT))
@@ -73,6 +81,12 @@ class CharacterSelectScreen:
         screen.blit(text_t, (70 + 2 * 560, 500))
 
     def handle_event(self, event):
+        """
+                Обрабатывает события мыши для выбора персонажа.
+
+                Args:
+                    event (pygame.event.Event): Событие Pygame.
+        """
         if event.type == pygame.MOUSEBUTTONUP:
             for i, rect in enumerate(self.char_rects):
                 if rect.collidepoint(event.pos):
@@ -80,8 +94,10 @@ class CharacterSelectScreen:
                     self.selected_character = i
 
     def is_ready(self):
+        """Проверяет, выбран ли персонаж."""
         return self.selected_character is not None
 
     def reset(self):
+        """Сбрасывает выбор персонажа."""
         self.selected_character = None
 

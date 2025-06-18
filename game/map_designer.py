@@ -12,14 +12,14 @@ COLOR_TO_CHAR = {
     (255, 255, 255): ' ',# Белый - пустоты
 }
 def image_to_map_txt(image_path, output_txt_path):
-    '''
+    """
             Метод считывет пиксели из изображения в формате PNG и создает файл формата TXT с заменной пикселей на символы
             для генерации карты
 
             Args:
                     image_path: PNG изображение.
                     output_txt_path: TXT файл для сохранения карты.
-    '''
+    """
     img = Image.open(image_path).convert('RGB')
     width, height = img.size
 
@@ -38,7 +38,7 @@ def image_to_map_txt(image_path, output_txt_path):
 
     print(f"Карта успешно сохранена в {output_txt_path}")
 
-# Временно
+
 img = input('Введите название файла с изображением карты: ')
 txt = input('Введите название для созданного файла: ')
 image_to_map_txt(os.path.join(DATA_DIR, img), os.path.join(DATA_DIR, txt))

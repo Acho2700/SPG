@@ -123,6 +123,13 @@ class Character(pygame.sprite.Sprite):
 
 
     def taking_damage(self, monsters, monster_bullets):
+        """
+            Регистрирует получение урона персонажем.
+
+            Args:
+                monsters (pygame.sprite.Group): Группа монстров.
+                monster_bullets (pygame.sprite.Group): Группа снарядов монстра.
+        """
         collided_monsters = pygame.sprite.spritecollide(self, monsters, False)
         collided_bullets = pygame.sprite.spritecollide(self, monster_bullets, True)
 

@@ -6,7 +6,19 @@ from paths import *
 
 
 class Monster(pygame.sprite.Sprite):
+    """
+        Класс монстра
+    """
     def __init__(self, frames, speed=2, health=10, damage=10.0):
+        """
+               Инициализация монстра.
+
+               Args:
+                   frames (list): Кадры анимации.
+                   speed (float, optional): Скорость монстра. По умолчанию 2.
+                   health (float, optional): Здоровье монстра. По умолчанию 10.
+                   damage (float, optional): Урон монстра. По умолчанию 10.0.
+        """
         super().__init__()
         self.frames = frames
         self.current_frame = 0
@@ -30,7 +42,15 @@ class Monster(pygame.sprite.Sprite):
         self.bullets = pygame.sprite.Group()
 
     def update(self, player_rect, walls, bullets, waters):
+        """
+                Обновляет состояние монстра: анимация, движение, звук, получение урона и смерть.
 
+                Args:
+                    player_rect (pygame.Rect): Коллизии игрока.
+                    walls (pygame.sprite.Group): Группа стен для проверки коллизий.
+                    bullets (pygame.sprite.Group): Группа пуль игрока.
+                    waters (pygame.sprite.Group): Группа водных препятствий.
+        """
         moving = False
 
         # Анимация
@@ -83,12 +103,25 @@ class Monster(pygame.sprite.Sprite):
             self.kill()
 
     def taking_damage(self, bullets):
+        """
+                Обрабатывает получение урона от пуль.
+
+                Args:
+                    bullets (pygame.sprite.Group): Группа пуль, с которыми проверяется столкновение.
+        """
         if pygame.sprite.spritecollide(self, bullets, False):
             damage = bullets.sprites()[0].damage #урон одного патрона
             self.health -= damage
 
 
 class Kusaka(Monster):
+    """
+        Класс монстра 'Кусака'. Наследует базовый функционал от Monster.
+
+        Особенности:
+            - Уникальные кадры анимации.
+            - Повышенная скорость и здоровье.
+    """
     def __init__(self):
         frame1 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/Kusaka_animation/1.png')).convert_alpha()
         frame2 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/Kusaka_animation/2.png')).convert_alpha()
@@ -113,6 +146,14 @@ class Kusaka(Monster):
 
 
 class Pluvaka(Monster):
+    """
+        Класс монстра 'Плювака'. Наследует базовый функционал от Monster.
+
+        Особенности:
+            - Может стрелять токсичными снарядами.
+            - Имеет радиус стрельбы и радиус слышимости звука.
+            - Пониженная скорость.
+    """
     def __init__(self):
         frame1 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/pluvaka_animation/1.png')).convert_alpha()
         frame2 = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/pluvaka_animation/2.png')).convert_alpha()
@@ -142,6 +183,16 @@ class Pluvaka(Monster):
         self.sound_radius = 500  # радиус слышимости звука
 
     def update(self, player_rect, walls, bullets, waters):
+        """
+                Дополненный метод update родительского класса.
+                Обновляет состояние монстра, включая стрельбу по игроку и обновление снарядов.
+
+                Args:
+                    player_rect (pygame.Rect): Коллизии игрока.
+                    walls (pygame.sprite.Group): Группа стен для проверки коллизий.
+                    bullets (pygame.sprite.Group): Группа пуль игрока.
+                    waters (pygame.sprite.Group): Группа водных препятствий.
+        """
         super().update(player_rect, walls, bullets, waters)
 
         # Рассчитываем расстояние до игрока
@@ -157,6 +208,12 @@ class Pluvaka(Monster):
         self.monster_bullets.update(walls, self.target, waters)
 
     def shoot(self, target_pos):
+        """
+                Создаёт и выпускает токсичный снаряд в сторону цели.
+
+                Args:
+                    target_pos (tuple): Координаты цели (игрока).
+        """
         bullet = ToxicBullet(
             start_pos=self.rect.center,
             target_pos=target_pos,
@@ -169,12 +226,25 @@ class Pluvaka(Monster):
             self.spit_sound.play()
 
     def draw_bullets(self, surface, camera):
+        """Отрисовка пуль"""
         for bullet in self.monster_bullets:
             surface.blit(bullet.image, camera.apply(bullet))
 
 
 class ToxicBullet(pygame.sprite.Sprite):
+    """
+        Класс токсичного снаряда, выпускаемого монстром Pluvaka.
+    """
     def __init__(self, start_pos, target_pos, speed=4, damage=1):
+        """
+                Инициализация токсичного снаряда.
+
+                Args:
+                    start_pos (tuple): Начальная позиция снаряда.
+                    target_pos (tuple): Позиция цели.
+                    speed (float, optional): Скорость снаряда. По умолчанию 4.
+                    damage (float, optional): Урон снаряда. По умолчанию 1.
+        """
         super().__init__()
         self.original_image = pygame.image.load(os.path.join(ASSETS_DIR, 'monsters/toxic_ball.png')).convert_alpha()
         self.image = pygame.transform.scale(self.original_image, (24, 24))
@@ -188,6 +258,14 @@ class ToxicBullet(pygame.sprite.Sprite):
         self.damage = damage
 
     def update(self, walls, player, waters):
+        """
+                Обновляет положение снаряда и проверяет столкновения со стенами.
+
+                Args:
+                    walls (pygame.sprite.Group): Группа стен для проверки коллизий.
+                    player: Объект игрока (не используется напрямую).
+                    waters (pygame.sprite.Group): Группа водных препятствий.
+        """
         # Движение
         self.rect.center += self.direction * self.speed
 
