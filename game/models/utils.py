@@ -4,6 +4,5 @@ import pygame
 
 WIDTH, HEIGHT = 1560, 900
 TILE_SIZE = (64, 64)
-# bg_image = pygame.image.load('assets/background_game.png').convert()
 
 

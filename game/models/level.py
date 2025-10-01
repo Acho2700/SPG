@@ -186,5 +186,5 @@ class Level:
 
                     self.floors.add(floor)
 
-
+print("Руслан- керри диф")
 

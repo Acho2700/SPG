@@ -61,7 +61,7 @@ class Character(pygame.sprite.Sprite):
                Returns:
                    bool: True, если персонаж умер (здоровье <= 0), иначе False.
         """
-        dx = dy = 0
+        dx = dy = 0         #Алгоритм: обработка ввода, движение, поворот, проверка урона, управление звуками и смерть персонажа
         if keys_pressed[pygame.K_w]: dy -= self.speed
         if keys_pressed[pygame.K_s]: dy += self.speed
         if keys_pressed[pygame.K_a]: dx -= self.speed
@@ -108,7 +108,7 @@ class Character(pygame.sprite.Sprite):
                     waters (pygame.sprite.Group): Группа водных препятствий.
         """
 
-
+        # Алгоритм движения
         # Двигаемся по X и проверяем коллизии
         self.rect.x += dx
         if pygame.sprite.spritecollide(self, walls, False) or pygame.sprite.spritecollide(self, waters, False):
@@ -133,7 +133,7 @@ class Character(pygame.sprite.Sprite):
         """
         collided_monsters = pygame.sprite.spritecollide(self, monsters, False)
         collided_bullets = pygame.sprite.spritecollide(self, monster_bullets, True)
-
+        # Алгоритм получения урона
         damage_taken = 0
 
         for monster in collided_monsters:
@@ -198,6 +198,8 @@ class Tank(Character):
                     mouse_click (tuple): Состояние кнопок мыши (например, pygame.mouse.get_pressed()).
                     walls (pygame.sprite.Group): Группа стен для проверки коллизий пуль.
         """
+        # Алгоритм управления топорами
+        #  Фильтрация живых снарядов, переключение изображений, управление кулдауном, создание новых снарядов и обновление их состояния
         # Удаляем мертвые топоры из группы
         self.bullets = pygame.sprite.Group([b for b in self.bullets if b.alive()])
 
